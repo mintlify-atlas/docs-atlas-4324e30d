@@ -1,0 +1,40 @@
+---
+title: Scan library
+description: Sync the database with the books directory by registering new files and removing stale records.
+---
+
+`POST /api/books/scan`
+
+Walks the books directory recursively and synchronizes its contents with the database:
+
+- **New files** not already in the database are registered as Book records. Cover images and embedded metadata are extracted. If the **Auto metadata** setting is enabled, online metadata is fetched. The configured rename and folder-organization scheme is applied.
+- **Stale records** whose files no longer exist on disk are removed from the database, along with any associated cover images.
+
+No request body is required.
+
+## Response
+
+<ResponseField name="added" type="integer" required>
+  Number of new book files registered during the scan.
+</ResponseField>
+
+<ResponseField name="removed" type="integer" required>
+  Number of database records removed because their files were missing from disk.
+</ResponseField>
+
+## Errors
+
+| Status | Condition |
+|---|---|
+| `401` | Not authenticated. |
+
+## Example
+
+```bash
+curl -X POST http://localhost:5000/api/books/scan \
+  --cookie "session=<your-session-cookie>"
+```
+
+```json
+{"added": 5, "removed": 2}
+```

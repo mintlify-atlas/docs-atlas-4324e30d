@@ -1,0 +1,171 @@
+---
+title: "Metadata"
+description: "Fetch, extract, and apply book metadata from Open Library, Apple Books, and Goodreads."
+---
+
+## Overview
+
+Bookie can populate book metadata — title, author, ISBN, publisher, cover, and more — from two sources:
+
+- **Embedded metadata** read directly from the file on upload or scan (EPUB and PDF only).
+- **Online sources** queried on demand or automatically on upload.
+
+---
+
+## Embedded metadata extraction
+
+When you upload or scan an EPUB or PDF file, Bookie reads whatever metadata is stored inside the file itself.
+
+<Tabs>
+  <Tab title="EPUB">
+    Bookie reads the OPF package document inside the EPUB ZIP archive, using the Dublin Core (`dc:`) and OPF namespaces.
+
+    Fields extracted:
+
+    | Field | OPF element |
+    |-------|-------------|
+    | Title | `dc:title` |
+    | Author | First `dc:creator` |
+    | Publisher | `dc:publisher` |
+    | Language | `dc:language` |
+    | Description | `dc:description` |
+    | Publication year | `dc:date` (first 4 characters) |
+    | ISBN-10 | `dc:identifier` with 10-digit value |
+    | ISBN-13 | `dc:identifier` with 13-digit value |
+  </Tab>
+  <Tab title="PDF">
+    Bookie reads the PDF document information dictionary using PyPDF.
+
+    Fields extracted:
+
+    | Field | PDF property |
+    |-------|---------------|
+    | Title | `/Title` |
+    | Author | `/Author` |
+    | Publisher | `/Creator` or `/Producer` |
+    | Description | `/Subject` |
+    | Publication year | `/CreationDate` (first 4 digits) |
+  </Tab>
+</Tabs>
+
+---
+
+## Online metadata sources
+
+Bookie searches three sources in parallel when you request metadata.
+
+<CardGroup cols={3}>
+  <Card title="Open Library" icon="book-open">
+    Searches by title, author, or ISBN. Returns full metadata including page count, categories, language, and ratings.
+  </Card>
+  <Card title="Apple Books" icon="apple">
+    Searches the iTunes API. Excellent source of high-resolution cover images.
+  </Card>
+  <Card title="Goodreads" icon="star">
+    Web scrape. Good for ratings, genre tags, and cover images.
+  </Card>
+</CardGroup>
+
+Results from all active sources are returned in priority order (see [Configuring sources](#configuring-sources) below).
+
+### Fields returned by online sources
+
+| Field | Open Library | Apple Books | Goodreads |
+|-------|:---:|:---:|:---:|
+| Title | ✓ | ✓ | ✓ |
+| Author | ✓ | ✓ | ✓ |
+| Publisher | ✓ | ✓ | — |
+| Publication year | ✓ | ✓ | — |
+| Page count | ✓ | — | ✓ |
+| Categories | ✓ | ✓ | ✓ |
+| Language | ✓ | — | — |
+| ISBN-10 | ✓ | — | — |
+| ISBN-13 | ✓ | — | ✓ |
+| Rating | ✓ | — | ✓ |
+| Cover image URL | ✓ | ✓ | ✓ |
+| Goodreads ID | — | — | ✓ |
+
+---
+
+## Metadata fields stored in Bookie
+
+Each book record stores the following metadata fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | text | Book title |
+| `author` | text | Primary author |
+| `isbn` | text | ISBN-10 |
+| `isbn13` | text | ISBN-13 |
+| `publisher` | text | Publisher name |
+| `published_date` | text | Publication year (4-digit string) |
+| `language` | text | Language code (e.g. `en`) |
+| `description` | text | Synopsis or back-cover text |
+| `page_count` | integer | Number of pages |
+| `categories` | text | Comma-separated genre/subject tags |
+| `rating` | float | Average rating (0–5) |
+| `goodreads_id` | text | Goodreads book ID |
+| `series` | text | Series name |
+| `series_order` | float | Position within the series (supports fractions, e.g. `1.5`) |
+
+---
+
+## Auto-metadata
+
+When **Auto-metadata** is enabled in **Settings**, Bookie automatically fetches online metadata for every book on upload and during a library scan.
+
+The fetch uses the book's ISBN, ISBN-13, or title as the search query (in that order of preference). The first result returned is applied to the book.
+
+<Tip>
+  Enable Auto-metadata before running a large library scan to populate all your books in one pass.
+</Tip>
+
+To toggle Auto-metadata: go to **Settings** and enable or disable the **Auto-metadata** option.
+
+---
+
+## Fetching metadata manually
+
+To search for and preview metadata results for a specific book:
+
+<Steps>
+  <Step title="Open the book">
+    Click on a book in your library to open its detail view.
+  </Step>
+  <Step title="Click Fetch metadata">
+    Click the **Fetch metadata** button. Bookie searches all active sources in parallel using the book's ISBN or title.
+  </Step>
+  <Step title="Choose a result">
+    Review the results from each source and select the one you want to apply.
+  </Step>
+  <Step title="Apply">
+    Click **Apply** on the result you want. All metadata fields from that result are written to the book record.
+  </Step>
+</Steps>
+
+---
+
+## Applying metadata
+
+When you apply a metadata result, all fields from the selected result overwrite the book's current values. You can also edit individual fields directly in the book detail view and save them manually.
+
+<Note>
+  Applying metadata also triggers a rename and folder re-organization if you have a rename scheme configured in Settings.
+</Note>
+
+---
+
+## Configuring sources
+
+You can change the priority order of metadata sources and disable sources you do not want to use.
+
+Go to **Settings → Metadata sources** to:
+
+- Drag sources into your preferred priority order. Results are returned in this order.
+- Toggle individual sources off to exclude them from all searches.
+
+The default source order is: **Open Library**, **Apple Books**, **Goodreads**.
+
+<Warning>
+  Goodreads results are obtained via web scraping. If Goodreads changes its page structure, results from that source may be incomplete or unavailable.
+</Warning>

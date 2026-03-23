@@ -1,0 +1,63 @@
+---
+title: 'Preview rename'
+description: 'Preview how a naming scheme would rename a list of books without applying any changes.'
+---
+
+`POST /api/rename/preview`
+
+Returns the new filename each specified book would receive under a given scheme, without moving or renaming any files on disk.
+
+## Request body
+
+<ParamField body="scheme" type="string" required>
+  The scheme key to apply (e.g., `author_title`). Must be one of the keys returned by `GET /api/rename/schemes`.
+</ParamField>
+
+<ParamField body="custom_template" type="string">
+  Template string to use when `scheme` is `custom`. Ignored for built-in schemes. Supports all placeholders listed in `GET /api/rename/schemes`.
+</ParamField>
+
+<ParamField body="book_ids" type="integer[]" required>
+  Array of book IDs to preview. Books that do not exist are silently skipped.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/rename/preview \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "scheme": "author_title",
+    "book_ids": [1, 2, 3]
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+[
+  {"id": 1, "original": "mybook.epub", "preview": "Tolkien, J.R.R. - The Hobbit.epub"},
+  {"id": 2, "original": "wizard.pdf", "preview": "Rowling, J.K. - Harry Potter and the Sorcerer's Stone.pdf"}
+]
+```
+
+</ResponseExample>
+
+## Response fields
+
+Returns an array of preview objects, one per book ID that was found.
+
+<ResponseField name="id" type="integer">
+  The book ID.
+</ResponseField>
+
+<ResponseField name="original" type="string">
+  The current filename (relative to the books directory).
+</ResponseField>
+
+<ResponseField name="preview" type="string">
+  The filename the book would be given if the scheme were applied. Includes the file extension.
+</ResponseField>

@@ -1,0 +1,242 @@
+---
+title: Book tags
+description: List, add, and remove tags on individual books, or bulk-tag multiple books at once.
+---
+
+Four endpoints manage the relationship between books and tags.
+
+---
+
+## List tags for a book
+
+`GET /api/books/{book_id}/tags`
+
+Returns all tags currently applied to the book.
+
+### Path parameters
+
+<ParamField path="book_id" type="number" required>
+  ID of the book.
+</ParamField>
+
+### Response
+
+Array of tag objects.
+
+<ResponseField name="[].id" type="number" required>
+  Tag ID.
+</ResponseField>
+
+<ResponseField name="[].name" type="string" required>
+  Tag name.
+</ResponseField>
+
+<ResponseField name="[].book_count" type="number" required>
+  Total number of books with this tag across the library.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/books/42/tags
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+[
+  {"id": 1, "name": "fantasy", "book_count": 12},
+  {"id": 4, "name": "to-read", "book_count": 3}
+]
+```
+
+</ResponseExample>
+
+---
+
+## Add tag to a book
+
+`POST /api/books/{book_id}/tags`
+
+Adds a tag to the book. If the tag does not exist, it is created automatically. If the tag is already on the book, no duplicate is created.
+
+### Path parameters
+
+<ParamField path="book_id" type="number" required>
+  ID of the book.
+</ParamField>
+
+### Body
+
+<ParamField body="name" type="string" required>
+  Tag name. Created automatically if it does not already exist.
+</ParamField>
+
+### Response
+
+Returns the tag object with status `201`.
+
+<ResponseField name="id" type="number" required>
+  Tag ID.
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Tag name.
+</ResponseField>
+
+<ResponseField name="book_count" type="number" required>
+  Total number of books with this tag.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/books/42/tags \
+  --header 'Content-Type: application/json' \
+  --data '{"name": "fantasy"}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "id": 1,
+  "name": "fantasy",
+  "book_count": 12
+}
+```
+
+```json 400
+{
+  "error": "Tag name required"
+}
+```
+
+</ResponseExample>
+
+---
+
+## Remove tag from a book
+
+`DELETE /api/books/{book_id}/tags/{tag_id}`
+
+Removes the association between the book and the tag. The tag itself is not deleted.
+
+### Path parameters
+
+<ParamField path="book_id" type="number" required>
+  ID of the book.
+</ParamField>
+
+<ParamField path="tag_id" type="number" required>
+  ID of the tag to remove.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean" required>
+  Always `true` on success.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request DELETE \
+  --url http://localhost:5000/api/books/42/tags/1
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "success": true
+}
+```
+
+```json 404
+{
+  "error": "404 Not Found"
+}
+```
+
+</ResponseExample>
+
+---
+
+## Bulk-tag books
+
+`POST /api/books/bulk-tag`
+
+Adds a tag to multiple books in a single request. The tag is created if it does not already exist. Books that already have the tag are skipped.
+
+### Body
+
+<ParamField body="ids" type="number[]" required>
+  Array of book IDs to tag.
+</ParamField>
+
+<ParamField body="tag" type="string" required>
+  Tag name to apply. Created automatically if it does not exist.
+</ParamField>
+
+### Response
+
+<ResponseField name="added" type="number" required>
+  Number of book-tag associations created. Books that already had the tag are not counted.
+</ResponseField>
+
+<ResponseField name="tag" type="object" required>
+  The tag that was applied.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="number" required>
+      Tag ID.
+    </ResponseField>
+    <ResponseField name="name" type="string" required>
+      Tag name.
+    </ResponseField>
+    <ResponseField name="book_count" type="number" required>
+      Total number of books with this tag after the operation.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/books/bulk-tag \
+  --header 'Content-Type: application/json' \
+  --data '{"ids": [1, 2, 3], "tag": "to-read"}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "added": 3,
+  "tag": {
+    "id": 4,
+    "name": "to-read",
+    "book_count": 3
+  }
+}
+```
+
+```json 400
+{
+  "error": "tag required"
+}
+```
+
+</ResponseExample>

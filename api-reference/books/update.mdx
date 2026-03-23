@@ -1,0 +1,92 @@
+---
+title: Update a book
+description: Edit the metadata fields of a book. The file is renamed and reorganized after saving.
+---
+
+`PUT /api/books/{book_id}`
+
+Updates one or more metadata fields on a book. Only fields present in the request body are changed. After saving, Bookie re-applies the configured rename and folder-organization scheme to the book file.
+
+## Path parameters
+
+<ParamField path="book_id" type="integer" required>
+  The unique ID of the book to update.
+</ParamField>
+
+## Request body
+
+All fields are optional. Omit any field you do not want to change.
+
+<ParamField body="title" type="string">
+  Book title.
+</ParamField>
+
+<ParamField body="author" type="string">
+  Primary author name.
+</ParamField>
+
+<ParamField body="published_date" type="string">
+  Publication year. Only the first 4 characters are used, so both `"1954"` and `"1954-07-29"` are accepted and stored as `"1954"`.
+</ParamField>
+
+<ParamField body="page_count" type="integer">
+  Number of pages.
+</ParamField>
+
+<ParamField body="series" type="string">
+  Series name.
+</ParamField>
+
+<ParamField body="series_order" type="number">
+  Position within the series. Must be a finite number. `NaN` and `Infinity` are rejected with a `400` error.
+</ParamField>
+
+<ParamField body="rating" type="number">
+  User rating. Must be a finite number. `NaN` and `Infinity` are rejected with a `400` error.
+</ParamField>
+
+## Response
+
+Returns the updated [Book object](/api-reference/overview#the-book-object).
+
+## Errors
+
+| Status | Condition |
+|---|---|
+| `400` | `series_order` or `rating` is not a finite number. |
+| `401` | Not authenticated. |
+| `404` | No book found with the given ID. |
+
+## Example
+
+```bash
+curl -X PUT http://localhost:5000/api/books/42 \
+  --cookie "session=<your-session-cookie>" \
+  -H "Content-Type: application/json" \
+  -d '{"rating": 4.5, "series": "The Hitchhiker'\''s Guide to the Galaxy", "series_order": 1}'
+```
+
+```json
+{
+  "id": 42,
+  "filename": "Douglas Adams/The Hitchhiker's Guide to the Galaxy.epub",
+  "file_format": "epub",
+  "file_size": 524288,
+  "title": "The Hitchhiker's Guide to the Galaxy",
+  "author": "Douglas Adams",
+  "isbn": null,
+  "isbn13": "9780330508537",
+  "publisher": "Pan Books",
+  "published_date": "1979",
+  "language": "en",
+  "page_count": 193,
+  "rating": 4.5,
+  "goodreads_id": null,
+  "cover_filename": "42.jpg",
+  "series": "The Hitchhiker's Guide to the Galaxy",
+  "series_order": 1.0,
+  "date_added": "2024-03-15T12:00:00+00:00",
+  "date_modified": "2024-03-15T15:00:00+00:00",
+  "tags": ["sci-fi", "comedy"]
+}
+```

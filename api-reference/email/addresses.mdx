@@ -1,0 +1,196 @@
+---
+title: 'Email addresses'
+description: 'Create, read, update, and delete delivery email addresses. One address can be marked as the default recipient.'
+---
+
+Email addresses are used as delivery destinations when sending books. Marking an address as default means it is used automatically when no explicit recipient is provided to `POST /api/books/{book_id}/send`.
+
+---
+
+## List email addresses
+
+`GET /api/email-addresses`
+
+Returns all saved email addresses ordered by default status (default first), then alphabetically by label.
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/email-addresses
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+[
+  {"id": 1, "label": "My Kindle", "email": "user@kindle.com", "is_default": true},
+  {"id": 2, "label": "Backup", "email": "backup@example.com", "is_default": false}
+]
+```
+
+</ResponseExample>
+
+<ResponseField name="id" type="integer">
+  Unique address ID.
+</ResponseField>
+
+<ResponseField name="label" type="string">
+  Display name for the address.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  The email address.
+</ResponseField>
+
+<ResponseField name="is_default" type="boolean">
+  `true` if this is the default delivery address.
+</ResponseField>
+
+---
+
+## Create email address
+
+`POST /api/email-addresses`
+
+Adds a new email address. Returns `201` on success.
+
+<ParamField body="email" type="string" required>
+  The email address to save.
+</ParamField>
+
+<ParamField body="label" type="string">
+  Display name for the address. Defaults to the email address if omitted.
+</ParamField>
+
+<ParamField body="is_default" type="boolean" default="false">
+  Set to `true` to make this the default address. Clears the default flag from any existing default.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/email-addresses \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "email": "user@kindle.com",
+    "label": "My Kindle",
+    "is_default": true
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{"id": 1, "label": "My Kindle", "email": "user@kindle.com", "is_default": true}
+```
+
+</ResponseExample>
+
+---
+
+## Update email address
+
+`PUT /api/email-addresses/{id}`
+
+Updates an existing email address. Only fields present in the request body are changed.
+
+<ParamField path="id" type="integer" required>
+  The ID of the address to update.
+</ParamField>
+
+<ParamField body="label" type="string">
+  New display name.
+</ParamField>
+
+<ParamField body="email" type="string">
+  New email address.
+</ParamField>
+
+<ParamField body="is_default" type="boolean">
+  Set to `true` to make this address the default. Clears the default flag from all other addresses.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request PUT \
+  --url http://localhost:5000/api/email-addresses/1 \
+  --header 'Content-Type: application/json' \
+  --data '{"label": "Personal Kindle", "is_default": true}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"id": 1, "label": "Personal Kindle", "email": "user@kindle.com", "is_default": true}
+```
+
+</ResponseExample>
+
+---
+
+## Delete email address
+
+`DELETE /api/email-addresses/{id}`
+
+Deletes an email address. If the deleted address was the default, the oldest remaining address is automatically promoted to default.
+
+<ParamField path="id" type="integer" required>
+  The ID of the address to delete.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request DELETE \
+  --url http://localhost:5000/api/email-addresses/1
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"success": true}
+```
+
+</ResponseExample>
+
+---
+
+## Set default address
+
+`POST /api/email-addresses/{id}/set-default`
+
+Marks the specified address as the default and clears the default flag from all other addresses.
+
+<ParamField path="id" type="integer" required>
+  The ID of the address to make default.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/email-addresses/2/set-default
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"id": 2, "label": "Backup", "email": "backup@example.com", "is_default": true}
+```
+
+</ResponseExample>
+
+Returns the updated address object with the same fields as the list response.

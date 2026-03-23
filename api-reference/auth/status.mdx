@@ -1,0 +1,47 @@
+---
+title: 'Auth status'
+description: 'Check the current authentication state and whether first-run setup is needed. Does not require authentication.'
+---
+
+`GET /api/auth/status`
+
+Returns the current session state and whether the instance has been configured. This endpoint does not require authentication and is safe to call before setup.
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/auth/status
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Authenticated
+{"authenticated": true, "username": "admin", "first_run": false}
+```
+
+```json 200 Not authenticated
+{"authenticated": false, "username": null, "first_run": false}
+```
+
+```json 200 First run
+{"authenticated": false, "username": null, "first_run": true}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="authenticated" type="boolean">
+  `true` if the current request has a valid session.
+</ResponseField>
+
+<ResponseField name="username" type="string | null">
+  The username of the authenticated user, or `null` if not authenticated.
+</ResponseField>
+
+<ResponseField name="first_run" type="boolean">
+  `true` if no account has been created yet. When `true`, redirect to setup before any other action.
+</ResponseField>

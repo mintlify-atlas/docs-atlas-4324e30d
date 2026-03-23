@@ -1,0 +1,75 @@
+---
+title: Upload cover
+description: Set a cover image for a book by uploading a file or providing a URL to download from.
+api: POST /api/books/{book_id}/cover
+---
+
+Saves a cover image for the book. Accepts either a multipart file upload or a JSON body with a `url` field. The image is resized and saved in two sizes: full (667 × 1000 px) and thumbnail (300 × 450 px). If the book is an EPUB, the cover is also automatically embedded into the EPUB file.
+
+## Path parameters
+
+<ParamField path="book_id" type="number" required>
+  ID of the book.
+</ParamField>
+
+## Body — file upload (multipart/form-data)
+
+<ParamField body="file" type="file">
+  Image file to use as the cover. Any format supported by Pillow is accepted.
+</ParamField>
+
+## Body — URL download (application/json)
+
+<ParamField body="url" type="string">
+  HTTPS URL of a cover image to download. HTTP URLs and URLs that resolve to private or loopback addresses are rejected. Maximum response size is 10 MB.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean" required>
+  Always `true` on success.
+</ResponseField>
+
+<ResponseField name="cover_filename" type="string" required>
+  Filename of the saved cover, e.g. `"42.jpg"`.
+</ResponseField>
+
+<RequestExample>
+
+```bash File upload
+curl --request POST \
+  --url http://localhost:5000/api/books/42/cover \
+  --form file=@/path/to/cover.jpg
+```
+
+```bash URL download
+curl --request POST \
+  --url http://localhost:5000/api/books/42/cover \
+  --header 'Content-Type: application/json' \
+  --data '{"url": "https://covers.openlibrary.org/b/id/8231992-L.jpg"}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "success": true,
+  "cover_filename": "42.jpg"
+}
+```
+
+```json 400
+{
+  "error": "No file or URL provided"
+}
+```
+
+```json 502
+{
+  "error": "Could not download cover"
+}
+```
+
+</ResponseExample>

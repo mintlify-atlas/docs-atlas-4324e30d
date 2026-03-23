@@ -1,0 +1,64 @@
+---
+title: Create tag
+description: Create a new tag by name. Returns the existing tag if the name is already taken.
+api: POST /api/tags
+---
+
+Creates a tag with the given name. Tag names must be non-empty after trimming whitespace. If a tag with the same name already exists, the existing tag is returned with status `200` rather than creating a duplicate.
+
+## Body
+
+<ParamField body="name" type="string" required>
+  Tag name. Whitespace is trimmed. Must be non-empty.
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="number" required>
+  Tag ID.
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Tag name.
+</ResponseField>
+
+<ResponseField name="book_count" type="number" required>
+  Number of books associated with this tag.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/tags \
+  --header 'Content-Type: application/json' \
+  --data '{"name": "science-fiction"}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201 Created
+{
+  "id": 8,
+  "name": "science-fiction",
+  "book_count": 0
+}
+```
+
+```json 200 Already exists
+{
+  "id": 8,
+  "name": "science-fiction",
+  "book_count": 3
+}
+```
+
+```json 400
+{
+  "error": "Name is required"
+}
+```
+
+</ResponseExample>

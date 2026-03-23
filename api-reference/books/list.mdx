@@ -1,0 +1,115 @@
+---
+title: List books
+description: Retrieve a paginated, filtered, and sorted list of books from the library.
+---
+
+`GET /api/books`
+
+Returns a paginated list of Book objects. You can filter by search term, format, series, language, or tag, and sort by any supported column.
+
+## Query parameters
+
+<ParamField query="q" type="string">
+  Search term matched case-insensitively against `title`, `author`, `series`, `isbn`, and `isbn13`.
+</ParamField>
+
+<ParamField query="format" type="string">
+  Filter by file format. Must be an exact match (case-insensitive), e.g. `epub`, `pdf`, `mobi`.
+</ParamField>
+
+<ParamField query="series" type="string">
+  Filter by exact series name.
+</ParamField>
+
+<ParamField query="language" type="string">
+  Filter by language code, e.g. `en`, `fr`.
+</ParamField>
+
+<ParamField query="tag" type="string">
+  Filter to books that have this tag applied.
+</ParamField>
+
+<ParamField query="sort" type="string" default="author">
+  Column to sort by. One of: `author`, `title`, `series`, `published_date`, `date_added`, `file_size`, `rating`.
+
+  - `author`: sorts by author, then series name + order, then title
+  - `title`: strips leading articles (A, An, The) before sorting
+  - `series`: nulls sorted last, then by series name and series order
+
+  Values outside this set fall back to `author`.
+</ParamField>
+
+<ParamField query="order" type="string" default="asc">
+  Sort direction. `asc` or `desc`.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Page number. Must be 1 or greater.
+</ParamField>
+
+<ParamField query="per_page" type="integer" default="40">
+  Number of items per page. Minimum 1, maximum 200.
+</ParamField>
+
+## Response
+
+<ResponseField name="books" type="object[]" required>
+  Array of [Book objects](/api-reference/overview#the-book-object) for the current page.
+</ResponseField>
+
+<ResponseField name="total" type="integer" required>
+  Total number of books matching the current filters.
+</ResponseField>
+
+<ResponseField name="pages" type="integer" required>
+  Total number of pages given the current `per_page` value.
+</ResponseField>
+
+<ResponseField name="page" type="integer" required>
+  The current page number.
+</ResponseField>
+
+## Example
+
+```bash
+curl http://localhost:5000/api/books \
+  --cookie "session=<your-session-cookie>" \
+  -G \
+  --data-urlencode "q=tolkien" \
+  --data-urlencode "sort=title" \
+  --data-urlencode "order=asc" \
+  --data-urlencode "page=1" \
+  --data-urlencode "per_page=20"
+```
+
+```json
+{
+  "books": [
+    {
+      "id": 1,
+      "filename": "J.R.R. Tolkien/The Fellowship of the Ring.epub",
+      "file_format": "epub",
+      "file_size": 1048576,
+      "title": "The Fellowship of the Ring",
+      "author": "J.R.R. Tolkien",
+      "isbn": null,
+      "isbn13": "9780261102354",
+      "publisher": "HarperCollins",
+      "published_date": "1954",
+      "language": "en",
+      "page_count": 423,
+      "rating": 4.9,
+      "goodreads_id": "3",
+      "cover_filename": "1.jpg",
+      "series": "The Lord of the Rings",
+      "series_order": 1.0,
+      "date_added": "2024-03-15T10:30:00+00:00",
+      "date_modified": "2024-03-15T10:30:00+00:00",
+      "tags": ["fantasy", "classic"]
+    }
+  ],
+  "total": 142,
+  "pages": 8,
+  "page": 1
+}
+```

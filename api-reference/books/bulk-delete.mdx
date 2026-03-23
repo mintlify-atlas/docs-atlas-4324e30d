@@ -1,0 +1,45 @@
+---
+title: Bulk delete books
+description: Delete multiple books by ID in a single request.
+---
+
+`POST /api/books/bulk-delete`
+
+Deletes multiple books in one request. For each ID in the list, Bookie deletes the book file from disk, cleans up empty parent directories, removes any associated cover image, and deletes the database record.
+
+IDs that do not match any book in the database are silently skipped.
+
+<Warning>
+  This action is irreversible. All matching files are deleted from disk and cannot be recovered through Bookie.
+</Warning>
+
+## Request body
+
+<ParamField body="ids" type="integer[]" required>
+  Array of book IDs to delete.
+</ParamField>
+
+## Response
+
+<ResponseField name="deleted" type="integer" required>
+  Number of books that were successfully deleted.
+</ResponseField>
+
+## Errors
+
+| Status | Condition |
+|---|---|
+| `401` | Not authenticated. |
+
+## Example
+
+```bash
+curl -X POST http://localhost:5000/api/books/bulk-delete \
+  --cookie "session=<your-session-cookie>" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [1, 2, 3]}'
+```
+
+```json
+{"deleted": 3}
+```

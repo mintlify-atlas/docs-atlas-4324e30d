@@ -1,0 +1,80 @@
+---
+title: 'List renaming schemes'
+description: 'Returns all available file naming schemes and supported template placeholders.'
+---
+
+`GET /api/rename/schemes`
+
+Returns the built-in naming schemes available for renaming book files, along with all placeholders you can use in a custom template.
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/rename/schemes
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "schemes": [
+    {"key": "original", "label": "Keep original filename", "template": "{original}"},
+    {"key": "title", "label": "Title", "template": "{title}"},
+    {"key": "author_title", "label": "Author - Title", "template": "{author} - {title}"},
+    {"key": "title_author", "label": "Title - Author", "template": "{title} - {author}"},
+    {"key": "author_title_year", "label": "Author - Title (Year)", "template": "{author} - {title} ({year})"},
+    {"key": "title_year", "label": "Title (Year)", "template": "{title} ({year})"},
+    {"key": "series_order", "label": "Series Index - Title", "template": "{series} {series_index} - {title}"},
+    {"key": "custom", "label": "Custom template", "template": null}
+  ],
+  "placeholders": [
+    {"placeholder": "{title}", "description": "Book title"},
+    {"placeholder": "{author}", "description": "Primary author"},
+    {"placeholder": "{year}", "description": "Publication year (4 digits)"},
+    {"placeholder": "{publisher}", "description": "Publisher name"},
+    {"placeholder": "{isbn}", "description": "ISBN-10"},
+    {"placeholder": "{isbn13}", "description": "ISBN-13"},
+    {"placeholder": "{language}", "description": "Language code"},
+    {"placeholder": "{series}", "description": "Series name"},
+    {"placeholder": "{series_index}", "description": "Series index/number"},
+    {"placeholder": "{original}", "description": "Original filename without extension"},
+    {"placeholder": "{ext}", "description": "File extension"}
+  ]
+}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="schemes" type="array">
+  List of available naming schemes.
+
+  <Expandable title="scheme object">
+    <ResponseField name="key" type="string">
+      Scheme identifier used in settings and API requests (e.g., `author_title`).
+    </ResponseField>
+    <ResponseField name="label" type="string">
+      Human-readable display name for the scheme.
+    </ResponseField>
+    <ResponseField name="template" type="string | null">
+      The template string used to generate filenames. `null` for the `custom` scheme, which uses a user-supplied template.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="placeholders" type="array">
+  All placeholders you can use in a custom template string.
+
+  <Expandable title="placeholder object">
+    <ResponseField name="placeholder" type="string">
+      Placeholder token (e.g., `{title}`).
+    </ResponseField>
+    <ResponseField name="description" type="string">
+      Description of what the placeholder is replaced with.
+    </ResponseField>
+  </Expandable>
+</ResponseField>

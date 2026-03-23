@@ -1,0 +1,146 @@
+---
+title: "Covers"
+description: "Automatically extract, upload, and embed cover images for your books."
+---
+
+## How covers are stored
+
+Bookie stores covers as JPEG files in the `covers/` directory inside your data volume. Two files are saved for each book:
+
+| File | Max dimensions | JPEG quality | Use |
+|------|----------------|--------------|-----|
+| `{book_id}.jpg` | 667 × 1000 px | 90 | Full-size display |
+| `{book_id}_thumb.jpg` | 300 × 450 px | 85 | Thumbnail display |
+
+Both files are created from the same source image whenever a cover is saved.
+
+---
+
+## Automatic cover extraction
+
+Bookie automatically extracts covers when you upload a file or run a library scan.
+
+<Tabs>
+  <Tab title="EPUB">
+    Bookie reads the EPUB's ZIP archive and locates the cover image by:
+
+    1. Parsing `META-INF/container.xml` to find the OPF package document.
+    2. Checking the OPF manifest for an item with `properties="cover-image"` (EPUB 3).
+    3. Checking the OPF metadata for a `<meta name="cover">` element (EPUB 2).
+    4. Falling back to any manifest item whose `id` contains the word `cover`.
+    5. As a last resort, scanning all files in the ZIP for names containing `cover` or `front` with an image extension (`.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`).
+  </Tab>
+  <Tab title="PDF">
+    Bookie uses PyPDF to open the file and reads the first image found on the first page of the document.
+
+    <Note>
+      Cover extraction from PDFs depends on the PDF having an embedded image on its first page. PDFs with text-only title pages will not yield a cover.
+    </Note>
+  </Tab>
+</Tabs>
+
+---
+
+## Uploading a custom cover
+
+You can replace a book's cover with your own image at any time.
+
+<Tabs>
+  <Tab title="Upload a file">
+    <Steps>
+      <Step title="Open the book">
+        Click the book in your library to open its detail view.
+      </Step>
+      <Step title="Click the cover area">
+        Click on the current cover image (or the placeholder) to open the cover upload dialog.
+      </Step>
+      <Step title="Choose a file">
+        Select an image file from your device. Bookie accepts any image format that Pillow can decode (JPEG, PNG, WebP, GIF, and others).
+      </Step>
+      <Step title="Save">
+        The image is processed, resized to the standard dimensions, saved as JPEG, and applied to the book immediately.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Use a URL">
+    <Steps>
+      <Step title="Open the cover upload dialog">
+        Open the book detail view and click the cover area.
+      </Step>
+      <Step title="Enter the image URL">
+        Paste an HTTPS image URL into the URL field.
+      </Step>
+      <Step title="Save">
+        Bookie downloads the image (up to 10 MB), processes it, and saves it as the book's cover.
+      </Step>
+    </Steps>
+
+    <Warning>
+      Only HTTPS URLs are accepted. URLs resolving to private IP addresses, loopback addresses, or `.local` / `.internal` hostnames are blocked for security.
+    </Warning>
+  </Tab>
+</Tabs>
+
+For EPUB files, uploading a new cover also automatically embeds it into the EPUB file itself (see [Embedding covers into EPUB files](#embedding-covers-into-epub-files) below).
+
+---
+
+## Viewing and downloading covers
+
+Covers are served from the API at:
+
+```
+GET /api/books/{id}/cover
+```
+
+Add `?thumb=true` to request the thumbnail version instead of the full-size image.
+
+```
+GET /api/books/{id}/cover?thumb=true
+```
+
+Both endpoints return `image/jpeg`.
+
+---
+
+## Cover search via metadata sources
+
+When you fetch metadata for a book, each search result includes a `cover_url` field pointing to a cover image from that source:
+
+| Source | Cover image |
+|--------|-------------|
+| Open Library | `https://covers.openlibrary.org/b/id/{cover_id}-L.jpg` |
+| Apple Books | Artwork URL upgraded from 100 × 100 px to 1500 × 1500 px |
+| Goodreads | Largest available book cover from the search results page |
+
+You can apply a cover from any metadata result directly from the metadata search panel without leaving the book detail view.
+
+---
+
+## Embedding covers into EPUB files
+
+Bookie can write the cover image back into the EPUB file so that eReaders and other applications display it correctly.
+
+This happens automatically when you upload or set a new cover for an EPUB book. You can also trigger it manually:
+
+<Steps>
+  <Step title="Open the book detail view">
+    Click the book in your library.
+  </Step>
+  <Step title="Click Embed cover">
+    Click the **Embed cover** button. This is only available for EPUB files.
+  </Step>
+</Steps>
+
+### How embedding works
+
+Bookie modifies the EPUB ZIP in-place:
+
+1. Parses the OPF manifest to find the existing cover image item.
+2. If a cover item exists (via EPUB 2 `<meta name="cover">` or EPUB 3 `properties="cover-image"`), its bytes are replaced with the new JPEG.
+3. If no cover item is found, a new `cover.jpg` entry is added to the ZIP and the OPF manifest and metadata are updated to reference it.
+4. As a last resort, `cover.jpg` is written to the root of the ZIP.
+
+<Note>
+  Embedding a cover modifies the EPUB file on disk. If you want to keep the original unmodified, download the file before embedding.
+</Note>

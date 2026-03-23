@@ -1,0 +1,38 @@
+---
+title: Delete cover
+description: Delete the saved cover image for a book and clear the cover reference on the book record.
+api: DELETE /api/books/{book_id}/cover
+---
+
+Deletes both the full-size and thumbnail cover image files from disk, and sets `cover_filename` to `null` on the book record. This does not remove any cover that was previously embedded into an EPUB file.
+
+## Path parameters
+
+<ParamField path="book_id" type="number" required>
+  ID of the book.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean" required>
+  Always `true` on success.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request DELETE \
+  --url http://localhost:5000/api/books/42/cover
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "success": true
+}
+```
+
+</ResponseExample>

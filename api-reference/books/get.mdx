@@ -1,0 +1,57 @@
+---
+title: Get a book
+description: Retrieve a single book record by its ID.
+---
+
+`GET /api/books/{book_id}`
+
+Returns the [Book object](/api-reference/overview#the-book-object) for the specified book.
+
+## Path parameters
+
+<ParamField path="book_id" type="integer" required>
+  The unique ID of the book.
+</ParamField>
+
+## Response
+
+Returns the [Book object](/api-reference/overview#the-book-object).
+
+## Errors
+
+| Status | Condition |
+|---|---|
+| `401` | Not authenticated. |
+| `404` | No book found with the given ID. |
+
+## Example
+
+```bash
+curl http://localhost:5000/api/books/42 \
+  --cookie "session=<your-session-cookie>"
+```
+
+```json
+{
+  "id": 42,
+  "filename": "Douglas Adams/The Hitchhiker's Guide to the Galaxy.epub",
+  "file_format": "epub",
+  "file_size": 524288,
+  "title": "The Hitchhiker's Guide to the Galaxy",
+  "author": "Douglas Adams",
+  "isbn": null,
+  "isbn13": "9780330508537",
+  "publisher": "Pan Books",
+  "published_date": "1979",
+  "language": "en",
+  "page_count": 193,
+  "rating": null,
+  "goodreads_id": null,
+  "cover_filename": "42.jpg",
+  "series": "The Hitchhiker's Guide to the Galaxy",
+  "series_order": 1.0,
+  "date_added": "2024-03-15T12:00:00+00:00",
+  "date_modified": "2024-03-15T14:22:00+00:00",
+  "tags": ["sci-fi", "comedy"]
+}
+```

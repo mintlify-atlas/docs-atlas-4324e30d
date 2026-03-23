@@ -1,0 +1,143 @@
+---
+title: "SMTP setup"
+description: "Configure an SMTP server so Bookie can send books directly to your eReader or Kindle by email."
+---
+
+Bookie can send books to any email address, including Kindle delivery addresses, using an SMTP server you provide. SMTP credentials are stored encrypted in the database using Fernet symmetric encryption (AES-128 in CBC mode).
+
+## Configure SMTP
+
+<Steps>
+  <Step title="Open Settings">
+    In the Bookie web UI, click **Settings** in the sidebar, then select the **Delivery** tab.
+  </Step>
+
+  <Step title="Enter your SMTP credentials">
+    Fill in the following fields:
+
+    | Field | Description | Example |
+    |---|---|---|
+    | **SMTP host** | Hostname of your mail server | `smtp.gmail.com` |
+    | **SMTP port** | Port number. Use `587` for STARTTLS (recommended) or `465` for SSL | `587` |
+    | **SMTP username** | Your email address or SMTP login | `you@gmail.com` |
+    | **SMTP password** | Your email password or app password | — |
+    | **Use STARTTLS** | Set to `true` for port 587. Set to `false` if your server requires direct SSL on port 465 | `true` |
+    | **Sender address** | The From address on outgoing emails. Defaults to the SMTP username if left blank | `you@gmail.com` |
+
+    <Note>Your password is encrypted before it is saved to the database. The raw password is never stored in plaintext.</Note>
+  </Step>
+
+  <Step title="Test the connection">
+    Click **Test connection**, or send a request directly:
+
+    ```http
+    POST /api/settings/test-smtp
+    Content-Type: application/json
+
+    {
+      "smtp_host": "smtp.gmail.com",
+      "smtp_port": 587,
+      "smtp_user": "you@gmail.com",
+      "smtp_password": "your-app-password",
+      "use_tls": true
+    }
+    ```
+
+    A successful response:
+
+    ```json
+    { "success": true, "message": "SMTP connection successful" }
+    ```
+  </Step>
+
+  <Step title="Send a test email">
+    Send a test message to verify end-to-end delivery:
+
+    ```http
+    POST /api/settings/test-smtp-send
+    Content-Type: application/json
+
+    {
+      "smtp_host": "smtp.gmail.com",
+      "smtp_port": 587,
+      "smtp_user": "you@gmail.com",
+      "smtp_password": "your-app-password",
+      "use_tls": true,
+      "recipient": "yourname@kindle.com",
+      "sender_email": "you@gmail.com"
+    }
+    ```
+  </Step>
+</Steps>
+
+## Common providers
+
+<AccordionGroup>
+  <Accordion title="Gmail">
+    Gmail requires an **App Password** — your regular account password will not work if two-factor authentication is enabled.
+
+    1. Go to your Google Account → **Security** → **App passwords**.
+    2. Generate a new app password for "Mail".
+    3. Use that 16-character password in Bookie's **SMTP password** field.
+
+    | Setting | Value |
+    |---|---|
+    | SMTP host | `smtp.gmail.com` |
+    | SMTP port | `587` |
+    | STARTTLS | `true` |
+
+    <Warning>If you use "Less secure app access" instead of an app password, Google may block the sign-in. App passwords are strongly recommended.</Warning>
+  </Accordion>
+
+  <Accordion title="Outlook / Hotmail">
+    Outlook supports STARTTLS on port 587 with your regular Microsoft account credentials.
+
+    | Setting | Value |
+    |---|---|
+    | SMTP host | `smtp-mail.outlook.com` |
+    | SMTP port | `587` |
+    | STARTTLS | `true` |
+  </Accordion>
+
+  <Accordion title="Custom / self-hosted SMTP">
+    Enter your server's hostname and port directly. If your server uses a self-signed certificate or requires SSL instead of STARTTLS, set **Use STARTTLS** to `false` and use port `465`.
+  </Accordion>
+</AccordionGroup>
+
+## Kindle delivery
+
+Amazon's Send to Kindle service accepts books emailed to your personal `@kindle.com` address.
+
+<Steps>
+  <Step title="Find your Kindle email address">
+    Log in to [amazon.com](https://www.amazon.com), go to **Account & Lists → Content & Devices → Preferences → Personal Document Settings**. Your Kindle email address is listed there.
+  </Step>
+
+  <Step title="Whitelist your sender address">
+    On the same page, under **Approved Personal Document E-mail List**, add the sender address you configured in Bookie. Amazon rejects emails from addresses that are not on this list.
+  </Step>
+
+  <Step title="Add the Kindle address in Bookie">
+    In Bookie, go to **Settings → Account** and add your `@kindle.com` address as a recipient. You can label it (for example, "My Kindle") and set it as the default so it is pre-selected when you send a book.
+  </Step>
+</Steps>
+
+<Info>Amazon supports EPUB and PDF files via Send to Kindle. Older Kindle devices may require MOBI format. Bookie sends the file as-is without conversion.</Info>
+
+## Managing recipient addresses
+
+Bookie stores a list of recipient email addresses separately from SMTP settings. This lets you send books to different eReaders without re-entering addresses each time.
+
+- Add multiple addresses, each with a label (for example, "Kindle", "Kobo", "Tablet").
+- Set one address as the **default** — it is used automatically when you send a book without specifying a recipient.
+- The default address can be changed at any time. When the default address is deleted, the oldest remaining address is promoted automatically.
+
+Addresses are managed via the **Settings → Account** section in the UI, or directly through the `/api/email-addresses` endpoints.
+
+## Password encryption
+
+Bookie encrypts the SMTP password using Fernet symmetric encryption before writing it to the database. The encryption key is stored in `data/encryption_key` and is generated automatically on first run with permissions set to owner-read/write only (`600`).
+
+When you view the Settings page, the password field displays `••••••••` instead of the actual value. Submitting `••••••••` back to the API is a no-op — Bookie recognizes the masked placeholder and skips the write, preserving the stored encrypted value.
+
+<Warning>Do not delete or modify `data/encryption_key`. If the key is lost, any encrypted SMTP password stored in the database can no longer be decrypted and must be re-entered.</Warning>

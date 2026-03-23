@@ -1,122 +1,143 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Bookie",
+  "theme": "almond",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#8B5E3C",
+    "light": "#F5EDE4",
+    "dark": "#3B1F0E"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/sweatyeggs69/Bookie"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/sweatyeggs69/Bookie"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
+              "introduction",
               "quickstart",
-              "development"
+              "installation"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Features",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "features/library-management",
+              "features/metadata",
+              "features/covers",
+              "features/tags-and-series",
+              "features/send-to-ereader"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Configuration",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "configuration/file-organization",
+              "configuration/smtp-setup",
+              "configuration/authentication"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/overview"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Books",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/books/list",
+              "api-reference/books/upload",
+              "api-reference/books/get",
+              "api-reference/books/update",
+              "api-reference/books/delete",
+              "api-reference/books/download",
+              "api-reference/books/scan",
+              "api-reference/books/bulk-delete"
+            ]
+          },
+          {
+            "group": "Metadata",
+            "pages": [
+              "api-reference/metadata/search",
+              "api-reference/metadata/fetch",
+              "api-reference/metadata/apply",
+              "api-reference/metadata/sources"
+            ]
+          },
+          {
+            "group": "Covers",
+            "pages": [
+              "api-reference/covers/get",
+              "api-reference/covers/upload",
+              "api-reference/covers/embed",
+              "api-reference/covers/delete"
+            ]
+          },
+          {
+            "group": "Tags & Series",
+            "pages": [
+              "api-reference/tags/list",
+              "api-reference/tags/create",
+              "api-reference/tags/delete",
+              "api-reference/tags/book-tags",
+              "api-reference/series/list"
+            ]
+          },
+          {
+            "group": "File Renaming",
+            "pages": [
+              "api-reference/rename/schemes",
+              "api-reference/rename/preview",
+              "api-reference/rename/bulk",
+              "api-reference/rename/organize"
+            ]
+          },
+          {
+            "group": "Email & Delivery",
+            "pages": [
+              "api-reference/email/send-book",
+              "api-reference/email/addresses",
+              "api-reference/email/smtp-test"
+            ]
+          },
+          {
+            "group": "Settings & Auth",
+            "pages": [
+              "api-reference/settings/get-update",
+              "api-reference/auth/setup",
+              "api-reference/auth/login",
+              "api-reference/auth/logout",
+              "api-reference/auth/status",
+              "api-reference/auth/change-password"
+            ]
+          },
+          {
+            "group": "Stats & Logs",
+            "pages": [
+              "api-reference/stats",
+              "api-reference/logs"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

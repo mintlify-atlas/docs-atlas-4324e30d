@@ -1,0 +1,54 @@
+---
+title: 'Login'
+description: 'Authenticate with a username and password to start a session.'
+---
+
+`POST /api/auth/login`
+
+Authenticates the user and creates a session. The session cookie is permanent with a 30-day lifetime.
+
+## Request body
+
+<ParamField body="username" type="string" required>
+  The account username.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The account password.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/auth/login \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "username": "admin",
+    "password": "yourpassword"
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"success": true}
+```
+
+```json 401
+{"error": "Invalid username or password"}
+```
+
+```json 403
+{"error": "No account configured. Please complete setup."}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="success" type="boolean">
+  `true` when credentials were accepted and the session was created.
+</ResponseField>

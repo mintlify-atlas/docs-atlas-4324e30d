@@ -1,0 +1,71 @@
+---
+title: Upload a book
+description: Upload an ebook file to the library. Metadata and cover are extracted automatically.
+---
+
+`POST /api/books/upload`
+
+Uploads an ebook file to the library using `multipart/form-data`. After saving the file, Bookie:
+
+1. Extracts the cover image from EPUB and PDF files.
+2. Reads embedded metadata (title, author, ISBN, publisher, language, etc.).
+3. Runs an automatic metadata fetch from online sources if the **Auto metadata** setting is enabled.
+4. Applies the configured rename and folder-organization scheme.
+
+## Request
+
+Send the file using the `file` field in a `multipart/form-data` request.
+
+<ParamField body="file" type="file" required>
+  The ebook file to upload. The filename extension determines the format.
+
+  **Supported formats:** `epub`, `pdf`, `mobi`, `azw`, `azw3`, `fb2`, `djvu`, `cbz`, `cbr`, `txt`
+
+  **Maximum size:** 35 MB
+
+  For `epub`, `pdf`, `cbz`, `cbr`, and `djvu` files, the file header is validated against known magic bytes. The upload is rejected if the content does not match the declared extension.
+</ParamField>
+
+## Response
+
+Returns the newly created [Book object](/api-reference/overview#the-book-object) with HTTP status `201`.
+
+## Errors
+
+| Status | Condition |
+|---|---|
+| `400` | No file provided, empty filename, unsupported format, or magic-byte mismatch. |
+| `401` | Not authenticated. |
+
+## Example
+
+```bash
+curl -X POST http://localhost:5000/api/books/upload \
+  --cookie "session=<your-session-cookie>" \
+  -F file=@book.epub
+```
+
+```json
+{
+  "id": 42,
+  "filename": "Douglas Adams/The Hitchhiker's Guide to the Galaxy.epub",
+  "file_format": "epub",
+  "file_size": 524288,
+  "title": "The Hitchhiker's Guide to the Galaxy",
+  "author": "Douglas Adams",
+  "isbn": null,
+  "isbn13": "9780330508537",
+  "publisher": "Pan Books",
+  "published_date": "1979",
+  "language": "en",
+  "page_count": 193,
+  "rating": null,
+  "goodreads_id": null,
+  "cover_filename": "42.jpg",
+  "series": "The Hitchhiker's Guide to the Galaxy",
+  "series_order": 1.0,
+  "date_added": "2024-03-15T12:00:00+00:00",
+  "date_modified": "2024-03-15T12:00:00+00:00",
+  "tags": []
+}
+```

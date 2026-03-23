@@ -1,0 +1,174 @@
+---
+title: "Authentication"
+description: "Learn how Bookie's single-account authentication works, including setup, login, session management, and password changes."
+---
+
+Bookie uses a single-account authentication model. There is one username and password for the entire instance. All API routes require an authenticated session.
+
+## First-run setup
+
+When you start Bookie for the first time, no account exists. The web UI automatically redirects to the setup page.
+
+<Steps>
+  <Step title="Open the setup page">
+    Navigate to your Bookie URL in a browser. You are redirected to `/setup` automatically because no account has been configured yet.
+  </Step>
+
+  <Step title="Create your account">
+    Enter a username and a password that meets the following requirements:
+
+    - **Minimum length:** 8 characters
+    - **Maximum length:** 256 characters
+
+    You can also call the setup endpoint directly:
+
+    ```http
+    POST /api/auth/setup
+    Content-Type: application/json
+
+    {
+      "username": "admin",
+      "password": "your-password"
+    }
+    ```
+
+    A successful response:
+
+    ```json
+    { "success": true }
+    ```
+
+    <Note>Setup can only be completed once. Calling `/api/auth/setup` after an account already exists returns `403 Forbidden`.</Note>
+  </Step>
+</Steps>
+
+## Logging in
+
+Submit your credentials to receive a session cookie:
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "your-password"
+}
+```
+
+A successful login response:
+
+```json
+{ "success": true }
+```
+
+An incorrect username or password returns:
+
+```json
+{ "error": "Invalid username or password" }
+```
+with status `401`.
+
+## Session management
+
+Bookie uses server-side session cookies managed by Flask. After a successful login:
+
+- The session is **permanent** with a **30-day lifetime**.
+- The cookie is set with the following security attributes:
+
+| Attribute | Value |
+|---|---|
+| `HttpOnly` | `true` — the cookie is not accessible from JavaScript |
+| `SameSite` | `Lax` — protects against most cross-site request forgery scenarios |
+| `Secure` | Configurable — see below |
+
+### Secure cookie setting
+
+The `Secure` flag controls whether the session cookie is sent only over HTTPS.
+
+Set the `SESSION_COOKIE_SECURE` environment variable to control this behavior:
+
+| Value | Effect |
+|---|---|
+| `true` or `1` or `yes` | Cookie is always marked Secure |
+| `false` or `0` or `no` | Cookie is never marked Secure (useful for HTTP-only local installs) |
+| _(not set)_ | Secure is enabled unless Flask is running in debug mode |
+
+```yaml
+# Docker Compose example
+environment:
+  - SESSION_COOKIE_SECURE=false  # for local HTTP access
+```
+
+<Warning>If you expose Bookie over the internet, run it behind a reverse proxy with HTTPS and set `SESSION_COOKIE_SECURE=true`.</Warning>
+
+## Checking authentication status
+
+To check whether the current session is authenticated and whether first-run setup is still needed:
+
+```http
+GET /api/auth/status
+```
+
+Response:
+
+```json
+{
+  "authenticated": true,
+  "username": "admin",
+  "first_run": false
+}
+```
+
+## Changing your password
+
+You must provide your current password to set a new one. The same length requirements apply (8–256 characters).
+
+```http
+POST /api/auth/change-password
+Content-Type: application/json
+
+{
+  "current_password": "old-password",
+  "new_password": "new-password"
+}
+```
+
+If the current password is incorrect, the response is `403 Forbidden`.
+
+## Logging out
+
+Clearing the session invalidates the cookie server-side:
+
+```http
+POST /api/auth/logout
+```
+
+Response:
+
+```json
+{ "success": true }
+```
+
+After logout, any subsequent request to a protected route returns `401 Unauthorized`.
+
+## Protected routes
+
+Every route under `/api/*` (except `/api/auth/setup`, `/api/auth/login`, and `/api/auth/status`) requires an authenticated session. Unauthenticated requests receive:
+
+```json
+{ "error": "Unauthorized" }
+```
+with status `401`.
+
+## Password storage
+
+Bookie stores passwords using **PBKDF2-SHA256** with the following parameters:
+
+| Parameter | Value |
+|---|---|
+| Algorithm | SHA-256 |
+| Iterations | 260,000 |
+| Salt | 32-byte random hex string, unique per account |
+
+The hash and salt are stored in the database. The plaintext password is never persisted. Password comparison uses `hmac.compare_digest` to prevent timing attacks.

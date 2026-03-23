@@ -1,0 +1,88 @@
+---
+title: "Introduction"
+description: "Bookie is a self-hosted eBook management platform with a clean web UI for organizing your library, fetching metadata, and sending books directly to your eReader."
+---
+
+## What is Bookie?
+
+Bookie is a self-hosted web application that gives you complete control over your eBook library. Run it in Docker, point it at your books folder, and get a fast, clean interface for organizing everything — with no subscriptions, no cloud dependency, and no tracking.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Deploy Bookie and add your first book in under 5 minutes
+  </Card>
+  <Card title="Installation" icon="docker" href="/installation">
+    Full Docker Compose setup and configuration reference
+  </Card>
+  <Card title="Library Management" icon="books" href="/features/library-management">
+    Upload, scan, search, and organize your eBook collection
+  </Card>
+  <Card title="Send to eReader" icon="paper-plane" href="/features/send-to-ereader">
+    Send books directly to Kindle or any eReader via email
+  </Card>
+</CardGroup>
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Multi-format support" icon="file">
+    EPUB, PDF, MOBI, AZW3, CBZ, CBR, FB2, DJVU, and TXT — Bookie handles them all with magic-byte validation on upload.
+  </Card>
+  <Card title="Automatic metadata" icon="magnifying-glass">
+    Fetch titles, authors, ISBNs, covers, and ratings from Open Library, Apple Books, and Goodreads in parallel.
+  </Card>
+  <Card title="Cover management" icon="image">
+    Extract covers from EPUB and PDF files, search for new ones, upload your own, and embed them directly into EPUB files.
+  </Card>
+  <Card title="Smart organization" icon="folder-tree">
+    Configurable rename schemes and folder structures — keep original names or automatically organize by author, series, and title.
+  </Card>
+  <Card title="Tags & series" icon="tags">
+    Tag books and track series with ordering — filter your library by any combination of tag, series, format, and language.
+  </Card>
+  <Card title="Send to Kindle" icon="send">
+    Configure SMTP once and send any book to your Kindle email address or any eReader that accepts email delivery.
+  </Card>
+</CardGroup>
+
+## How it works
+
+Bookie is a Flask (Python) backend serving a React + TypeScript frontend, packaged as a single Docker image. Your library lives in a persistent volume on your host, and a SQLite database tracks all metadata. Nothing leaves your server unless you explicitly send a book to an eReader.
+
+```
+┌─────────────────────────────────────────┐
+│           Your Docker host              │
+│                                         │
+│  ┌──────────────────────────────────┐  │
+│  │         Bookie container         │  │
+│  │  React UI  ←→  Flask API         │  │
+│  │              ↕                   │  │
+│  │          SQLite DB               │  │
+│  └──────────┬───────────────────────┘  │
+│             │ volume mount             │
+│  ┌──────────▼───────────────────────┐  │
+│  │      /path/to/config/            │  │
+│  │      ├── books/                  │  │
+│  │      ├── covers/                 │  │
+│  │      └── booker.db               │  │
+│  └──────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+```
+
+## Supported formats
+
+| Format | Extension | Cover extraction | Metadata extraction |
+|--------|-----------|-----------------|---------------------|
+| EPUB   | `.epub`   | Yes             | Yes                 |
+| PDF    | `.pdf`    | Yes (first page)| Yes                 |
+| MOBI   | `.mobi`   | —               | —                   |
+| AZW3   | `.azw3`   | —               | —                   |
+| CBZ    | `.cbz`    | —               | —                   |
+| CBR    | `.cbr`    | —               | —                   |
+| FB2    | `.fb2`    | —               | —                   |
+| DJVU   | `.djvu`   | —               | —                   |
+| TXT    | `.txt`    | —               | —                   |
+
+<Note>
+  The maximum upload size is 35 MB per file. Metadata and cover search works best for EPUB and PDF files since they contain embedded information.
+</Note>

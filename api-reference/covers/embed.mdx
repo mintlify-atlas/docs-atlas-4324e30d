@@ -1,0 +1,52 @@
+---
+title: Embed cover in EPUB
+description: Embed the saved cover image directly into the EPUB file's internal manifest.
+api: POST /api/books/{book_id}/cover/embed
+---
+
+Embeds the currently saved cover image into the EPUB file itself by updating the OPF manifest and replacing the existing cover entry. This operation modifies the EPUB file on disk.
+
+Only works for books with `file_format: "epub"`. Returns `400` for other formats and `404` when the book has no saved cover.
+
+## Path parameters
+
+<ParamField path="book_id" type="number" required>
+  ID of the book.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean" required>
+  `true` when the cover was embedded successfully.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/books/42/cover/embed
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "success": true
+}
+```
+
+```json 400
+{
+  "error": "Cover embedding only supported for EPUB files"
+}
+```
+
+```json 404
+{
+  "error": "No cover image found"
+}
+```
+
+</ResponseExample>

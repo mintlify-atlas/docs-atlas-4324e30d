@@ -1,0 +1,37 @@
+---
+title: Download a book
+description: Download the original ebook file as an attachment.
+---
+
+`GET /api/books/{book_id}/download`
+
+Returns the book file as a downloadable attachment. The `Content-Disposition` header is set to `attachment` with the original filename.
+
+The resolved file path is validated to stay within the configured books directory. Requests that would escape the directory are rejected with `400`.
+
+## Path parameters
+
+<ParamField path="book_id" type="integer" required>
+  The unique ID of the book to download.
+</ParamField>
+
+## Response
+
+The raw file bytes with appropriate headers for a file download. The `download_name` matches the book's filename.
+
+## Errors
+
+| Status | Condition |
+|---|---|
+| `400` | Resolved file path escapes the books directory (path traversal attempt). |
+| `401` | Not authenticated. |
+| `404` | No book found with the given ID, or the file is missing from disk. |
+
+## Example
+
+```bash
+curl -O http://localhost:5000/api/books/42/download \
+  --cookie "session=<your-session-cookie>"
+```
+
+Use `-O` to save the file with the name provided by the server. Use `-o filename.epub` to specify a custom output path.

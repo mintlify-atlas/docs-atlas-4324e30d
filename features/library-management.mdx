@@ -1,0 +1,133 @@
+---
+title: "Library management"
+description: "Upload, scan, search, filter, sort, and download your eBook collection in Bookie."
+---
+
+## Uploading books
+
+Bookie accepts uploads through drag-and-drop or the file picker in the web UI.
+
+**Supported formats:** `epub`, `pdf`, `mobi`, `azw`, `azw3`, `fb2`, `djvu`, `cbz`, `cbr`, `txt`
+
+**Maximum file size:** 35 MB per file
+
+<Note>
+  For `epub`, `pdf`, `cbz`, `cbr`, and `djvu` files, Bookie validates the file's magic bytes on upload to confirm the file content matches the declared extension. A file renamed to `.epub` that is not actually a ZIP archive will be rejected.
+</Note>
+
+When you upload a file, Bookie automatically:
+
+1. Saves the file to your `books/` directory with a sanitized, collision-safe filename.
+2. Extracts any embedded cover image (EPUB and PDF only).
+3. Reads embedded metadata from the file (EPUB and PDF only).
+4. Fetches additional metadata from online sources if **Auto-metadata** is enabled in Settings.
+5. Applies your configured rename scheme and folder organization.
+
+### Magic-byte validation
+
+The following formats are validated against their binary signatures before being saved:
+
+| Format | Signature |
+|--------|-----------|
+| `epub` | `PK\x03\x04` (ZIP archive) |
+| `pdf`  | `%PDF` |
+| `cbz`  | `PK\x03\x04` (ZIP archive) |
+| `cbr`  | `Rar!\x1a\x07` (RAR v4/v5) or `PK\x03\x04` |
+| `djvu` | `AT&TFORM` |
+
+Formats not listed (`mobi`, `azw`, `azw3`, `fb2`, `txt`) are accepted based on file extension alone.
+
+---
+
+## Scanning your library
+
+If you add or remove files directly on disk (for example, by copying files into the Docker volume), use **Scan library** to sync the database with your `books/` directory.
+
+Bookie scans recursively, so files in subdirectories are found automatically.
+
+During a scan, Bookie:
+
+- Registers any new files not already in the database.
+- Removes database entries for files that no longer exist on disk.
+- Extracts embedded covers and metadata for newly discovered files.
+- Fetches online metadata for new files if **Auto-metadata** is enabled.
+- Applies your rename and folder organization scheme to new files.
+
+<Tip>
+  Run a scan after manually copying a batch of books into your library volume to bring them all into Bookie at once.
+</Tip>
+
+---
+
+## Searching and filtering
+
+Use the search bar and filter controls in the library view to narrow your results.
+
+### Search
+
+The search query (`q`) matches against **title**, **author**, **series**, **ISBN-10**, and **ISBN-13** fields. The search is case-insensitive.
+
+### Filters
+
+| Filter | What it does |
+|--------|--------------|
+| **Format** | Show only books of a specific file format (e.g. `epub`, `pdf`). |
+| **Series** | Show only books belonging to a specific series. |
+| **Language** | Show only books with a specific language code. |
+| **Tag** | Show only books with a specific tag applied. |
+
+Filters can be combined. For example, you can filter by both format and tag simultaneously.
+
+---
+
+## Sorting
+
+You can sort your library by the following fields, in ascending (`asc`) or descending (`desc`) order:
+
+| Sort field | Notes |
+|------------|-------|
+| `author` | Primary sort; series name and order are used as secondary sorts, then title. |
+| `title` | Leading articles ("A ", "An ", "The ") are ignored when sorting. |
+| `series` | Books without a series appear last, then sorted by series name, then `series_order`. |
+| `published_date` | Year of publication. |
+| `date_added` | When the book was added to Bookie. |
+| `file_size` | File size in bytes. |
+| `rating` | Average rating (0–5). |
+
+The default sort is **author ascending**.
+
+---
+
+## Pagination
+
+Results are paginated. You can control the page and page size:
+
+| Parameter | Default | Maximum |
+|-----------|---------|---------|
+| `page` | `1` | — |
+| `per_page` | `40` | `200` |
+
+---
+
+## Bulk operations
+
+Select multiple books in the library view to perform bulk actions.
+
+<CardGroup cols={2}>
+  <Card title="Bulk delete" icon="trash">
+    Permanently deletes the selected books and their files from disk. Empty directories are cleaned up automatically.
+  </Card>
+  <Card title="Bulk tag" icon="tag">
+    Applies a tag to all selected books at once. The tag is created if it does not already exist.
+  </Card>
+</CardGroup>
+
+<Warning>
+  Bulk delete is permanent and cannot be undone. The book files are removed from disk along with their database records and cover images.
+</Warning>
+
+---
+
+## Downloading books
+
+Click the download button on any book to download the original file. Bookie serves the file as an attachment using its stored filename.

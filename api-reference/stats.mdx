@@ -1,0 +1,48 @@
+---
+title: 'Library stats'
+description: 'Returns aggregate statistics for the book library including total count, format breakdown, language breakdown, and total file size.'
+---
+
+`GET /api/stats`
+
+Returns a summary of the library contents.
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/stats
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "total_books": 142,
+  "formats": {"epub": 98, "pdf": 32, "mobi": 12},
+  "languages": {"en": 130, "fr": 12},
+  "total_size_bytes": 4831838208
+}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="total_books" type="integer">
+  Total number of books in the library.
+</ResponseField>
+
+<ResponseField name="formats" type="object">
+  Map of file format to book count (e.g., `{"epub": 98, "pdf": 32}`).
+</ResponseField>
+
+<ResponseField name="languages" type="object">
+  Map of language code to book count for books that have a language set (e.g., `{"en": 130, "fr": 12}`). Books with no language are excluded.
+</ResponseField>
+
+<ResponseField name="total_size_bytes" type="integer">
+  Sum of all book file sizes in bytes.
+</ResponseField>

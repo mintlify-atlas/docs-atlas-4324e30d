@@ -1,0 +1,143 @@
+---
+title: Installation
+description: Full reference for deploying Bookie with Docker Compose, including all environment variables, volume mounts, and configuration options.
+---
+
+Bookie is distributed as a single Docker image. The recommended deployment method is Docker Compose.
+
+**Docker image:** `ghcr.io/sweatyeggs69/bookie:latest`
+
+## Docker Compose
+
+<Tabs>
+  <Tab title="HTTP (local or home network)">
+    The minimal configuration for HTTP access. `SESSION_COOKIE_SECURE=false` is required so that session cookies are accepted over plain HTTP.
+
+    ```yaml docker-compose.yml
+    services:
+      bookie:
+        container_name: bookie
+        image: ghcr.io/sweatyeggs69/bookie:latest
+        ports:
+          - "5000:5000"
+        volumes:
+          - /path/to/config:/app/data
+        environment:
+          - SESSION_COOKIE_SECURE=false  # Required when accessing over HTTP
+        restart: unless-stopped
+    ```
+
+    <Warning>
+      Do not expose this configuration directly to the public internet without a reverse proxy and HTTPS. Cookies and session data are transmitted in plaintext over HTTP.
+    </Warning>
+  </Tab>
+
+  <Tab title="HTTPS (behind a reverse proxy)">
+    When Bookie sits behind a reverse proxy that terminates TLS (e.g., Nginx, Caddy, Traefik), omit `SESSION_COOKIE_SECURE` or set it to `true`. Bookie defaults to secure cookies when not running in debug mode.
+
+    ```yaml docker-compose.yml
+    services:
+      bookie:
+        container_name: bookie
+        image: ghcr.io/sweatyeggs69/bookie:latest
+        ports:
+          - "5000:5000"
+        volumes:
+          - /path/to/config:/app/data
+        environment:
+          - SESSION_COOKIE_SECURE=true
+        restart: unless-stopped
+    ```
+
+    <Note>
+      Configure your reverse proxy to forward requests to `localhost:5000`. Ensure the proxy sets the `X-Forwarded-Proto` header so Flask can detect the HTTPS scheme.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Environment variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `SESSION_COOKIE_SECURE` | `true` in production, `false` in debug | Controls whether session cookies require HTTPS. Set to `false` for HTTP-only access. Accepts `true`/`false`, `1`/`0`, or `yes`/`no`. |
+| `DATA_DIR` | `/app/data` | Root directory for all persistent data inside the container. |
+| `DATABASE_URL` | `sqlite:///data/booker.db` | SQLAlchemy database URL. Defaults to a SQLite database inside `DATA_DIR`. |
+| `SECRET_KEY` | Auto-generated | Flask secret key used to sign session cookies. If not set, Bookie generates a random key on first start and stores it at `DATA_DIR/secret_key`. |
+| `FLASK_APP` | `app.py` | Flask application module. Do not change this value. |
+
+### `SESSION_COOKIE_SECURE`
+
+This variable maps directly to Flask's `SESSION_COOKIE_SECURE` config flag.
+
+- Set to `false` (or `0` / `no`) for HTTP access — required for local home-network deployments.
+- Set to `true` (or `1` / `yes`) to enforce secure cookies — recommended when accessed over HTTPS.
+- If unset, Bookie enables secure cookies unless Flask is running in debug mode.
+
+<Warning>
+  If you access Bookie over HTTP without setting `SESSION_COOKIE_SECURE=false`, your browser will reject the session cookie and you will not be able to log in.
+</Warning>
+
+### `SECRET_KEY`
+
+If `SECRET_KEY` is not provided, Bookie generates a 64-character hex key using `secrets.token_hex(32)` and writes it to `DATA_DIR/secret_key` with permissions `600`. The key is reloaded from that file on subsequent starts.
+
+<Note>
+  As long as the `/app/data` volume is persisted, the auto-generated key survives container restarts. You only need to set `SECRET_KEY` explicitly if you run multiple replicas or want to manage the key yourself.
+</Note>
+
+## Volume mounts
+
+All persistent data lives under a single directory inside the container.
+
+| Container path | Description |
+|---|---|
+| `/app/data` | Root data directory. Mount a host path here to persist all data. |
+| `/app/data/books/` | Uploaded book files, organized by author/title. |
+| `/app/data/covers/` | Cached cover images. |
+| `/app/data/booker.db` | SQLite database (default). |
+| `/app/data/secret_key` | Auto-generated Flask secret key (created on first start if `SECRET_KEY` is not set). |
+
+Bookie creates the `books/` and `covers/` subdirectories automatically on startup if they do not exist.
+
+```yaml
+volumes:
+  - /path/to/config:/app/data
+```
+
+<Warning>
+  Always mount a volume at `/app/data`. Without it, all books, covers, and the database are lost when the container is removed.
+</Warning>
+
+## Port
+
+Bookie listens on port `5000` inside the container, served by Gunicorn with 2 workers and a 120-second request timeout.
+
+```yaml
+ports:
+  - "5000:5000"
+```
+
+To use a different host port, change only the left-hand value:
+
+```yaml
+ports:
+  - "8080:5000"
+```
+
+## Health check
+
+The Docker image includes a built-in health check that verifies the application is responding:
+
+```
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/')" || exit 1
+```
+
+| Parameter | Value | Description |
+|---|---|---|
+| `interval` | 30s | Time between health checks. |
+| `timeout` | 10s | Time before a check is considered failed. |
+| `start-period` | 15s | Grace period after container start before checks begin. |
+| `retries` | 3 | Consecutive failures required to mark the container unhealthy. |
+
+The health check makes an HTTP request to `http://localhost:5000/`. The container is marked **healthy** once the first successful response is received.

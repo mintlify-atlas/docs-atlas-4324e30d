@@ -1,0 +1,60 @@
+---
+title: 'Initial setup'
+description: 'Create the first account on a new Bookie instance. Only available before any account has been configured.'
+---
+
+`POST /api/auth/setup`
+
+Creates the initial admin account. This endpoint is only available during first run — before any account exists. Subsequent calls return `403`.
+
+A successful response also creates an authenticated session, so you do not need to call `POST /api/auth/login` afterward.
+
+<Warning>
+  This endpoint returns `403` if setup has already been completed. Check `GET /api/auth/status` first if you are unsure whether the instance is configured.
+</Warning>
+
+## Request body
+
+<ParamField body="username" type="string" required>
+  Username for the account.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Password for the account. Must be between 8 and 256 characters.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/auth/setup \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "username": "admin",
+    "password": "changeme1"
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"success": true}
+```
+
+```json 400
+{"error": "Password must be at least 8 characters"}
+```
+
+```json 403
+{"error": "Setup already complete"}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the account was created and the session was established.
+</ResponseField>

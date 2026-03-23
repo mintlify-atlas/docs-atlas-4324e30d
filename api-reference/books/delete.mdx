@@ -1,0 +1,42 @@
+---
+title: Delete a book
+description: Permanently remove a book file from disk and its record from the database.
+---
+
+`DELETE /api/books/{book_id}`
+
+Deletes the book's file from disk, removes any associated cover image, cleans up empty parent directories left behind, and deletes the database record.
+
+<Warning>
+  This action is irreversible. The file is deleted from disk and cannot be recovered through Bookie.
+</Warning>
+
+## Path parameters
+
+<ParamField path="book_id" type="integer" required>
+  The unique ID of the book to delete.
+</ParamField>
+
+## Response
+
+```json
+{"success": true}
+```
+
+## Errors
+
+| Status | Condition |
+|---|---|
+| `401` | Not authenticated. |
+| `404` | No book found with the given ID. |
+
+## Example
+
+```bash
+curl -X DELETE http://localhost:5000/api/books/42 \
+  --cookie "session=<your-session-cookie>"
+```
+
+```json
+{"success": true}
+```

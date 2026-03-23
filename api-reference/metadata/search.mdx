@@ -1,0 +1,133 @@
+---
+title: Search metadata
+description: Search across metadata sources for book information by query string.
+api: GET /api/metadata/search
+---
+
+Searches the configured metadata sources in parallel and returns results ordered by source priority. Disabled sources are excluded even if explicitly listed in the `sources` parameter.
+
+## Query parameters
+
+<ParamField query="q" type="string" required>
+  Search query. Can be a book title, author name, or ISBN.
+</ParamField>
+
+<ParamField query="sources" type="string">
+  Comma-separated list of source keys to search. When omitted, uses the configured priority order.
+
+  Available values: `open_library`, `itunes`, `goodreads`
+</ParamField>
+
+## Response
+
+Returns an array of metadata result objects.
+
+<ResponseField name="[].source" type="string" required>
+  Source that returned this result. One of `open_library`, `itunes`, or `goodreads`.
+</ResponseField>
+
+<ResponseField name="[].title" type="string">
+  Book title.
+</ResponseField>
+
+<ResponseField name="[].author" type="string">
+  Author name or names, comma-separated.
+</ResponseField>
+
+<ResponseField name="[].publisher" type="string">
+  Publisher name.
+</ResponseField>
+
+<ResponseField name="[].published_date" type="string">
+  Four-digit publication year (e.g. `"1999"`).
+</ResponseField>
+
+<ResponseField name="[].page_count" type="number">
+  Number of pages. `null` when not available from the source.
+</ResponseField>
+
+<ResponseField name="[].categories" type="string">
+  Comma-separated subject categories or genres.
+</ResponseField>
+
+<ResponseField name="[].language" type="string">
+  Language code or name. `null` when not available.
+</ResponseField>
+
+<ResponseField name="[].isbn" type="string">
+  ISBN-10. `null` when not available.
+</ResponseField>
+
+<ResponseField name="[].isbn13" type="string">
+  ISBN-13. `null` when not available.
+</ResponseField>
+
+<ResponseField name="[].rating" type="number">
+  Average rating. `null` when not available from the source.
+</ResponseField>
+
+<ResponseField name="[].cover_url" type="string">
+  URL of the cover image. `null` when not available.
+</ResponseField>
+
+<ResponseField name="[].goodreads_id" type="string">
+  GoodReads book ID. Only present on results from the `goodreads` source.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url 'http://localhost:5000/api/metadata/search?q=The+Name+of+the+Wind'
+```
+
+```bash cURL with sources
+curl --request GET \
+  --url 'http://localhost:5000/api/metadata/search?q=9780756404079&sources=open_library,itunes'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+[
+  {
+    "source": "open_library",
+    "title": "The Name of the Wind",
+    "author": "Patrick Rothfuss",
+    "publisher": "DAW Books",
+    "published_date": "2007",
+    "page_count": 662,
+    "categories": "Fantasy fiction, Magic, Fiction",
+    "language": "eng",
+    "isbn": "0756404177",
+    "isbn13": "9780756404178",
+    "rating": 4.5,
+    "cover_url": "https://covers.openlibrary.org/b/id/8739161-L.jpg"
+  },
+  {
+    "source": "goodreads",
+    "goodreads_id": "186074",
+    "title": "The Name of the Wind",
+    "author": "Patrick Rothfuss",
+    "cover_url": "https://i.gr-assets.com/images/S/photo.goodreads.com/books/1270352123l/186074.jpg",
+    "publisher": null,
+    "published_date": null,
+    "page_count": null,
+    "categories": null,
+    "language": null,
+    "isbn": null,
+    "isbn13": null,
+    "rating": null
+  }
+]
+```
+
+```json 400
+{
+  "error": "Query required"
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,106 @@
+---
+title: "Send to eReader"
+description: "Send books directly to your Kindle or any eReader that accepts email delivery."
+---
+
+## How it works
+
+Bookie sends book files as email attachments over SMTP. Any eReader that accepts books by email — including Kindle, Kobo, and PocketBook — can receive books this way.
+
+For **Kindle**, sending a compatible file (EPUB, MOBI, AZW) to your `@kindle.com` address causes Amazon's servers to automatically convert and deliver it to your device.
+
+<Info>
+  You need an SMTP account to use this feature. A free Gmail, Outlook, or Fastmail account works. For Kindle delivery, make sure your sender address is added to your Kindle's **Approved Personal Document Email List** in Amazon's account settings.
+</Info>
+
+---
+
+## Configuring SMTP
+
+Go to **Settings → Email / SMTP** and fill in your mail server details.
+
+| Setting | Description |
+|---------|-------------|
+| **SMTP host** | Your mail server hostname (e.g. `smtp.gmail.com`) |
+| **SMTP port** | Port number. Default: `587` (STARTTLS). Use `465` for SSL. |
+| **SMTP username** | Your email address or account login |
+| **SMTP password** | Your account password or app-specific password |
+| **Use TLS** | Enable STARTTLS (recommended). Disable to use SMTP SSL on port 465. |
+| **Sender address** | The From address on outgoing emails. Defaults to your SMTP username if left blank. |
+
+<Tip>
+  If you use Gmail with 2-Step Verification enabled, you must create an **App Password** under your Google account security settings and use that instead of your regular password.
+</Tip>
+
+### Testing your SMTP configuration
+
+Bookie provides two test actions in **Settings → Email / SMTP**:
+
+<AccordionGroup>
+  <Accordion title="Test connection">
+    Verifies that Bookie can connect to your SMTP server and authenticate successfully, without sending any email.
+  </Accordion>
+  <Accordion title="Send test email">
+    Sends a short test message to a recipient address you specify. Use this to confirm end-to-end delivery before sending a book.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Managing recipient addresses
+
+Bookie stores a list of named email addresses so you can send to different devices or people without re-typing addresses.
+
+### Adding an address
+
+Go to **Settings → eReader addresses** and click **Add address**.
+
+| Field | Description |
+|-------|-------------|
+| **Label** | A friendly name, e.g. `My Kindle` or `Kobo Clara`. Defaults to the email address if left blank. |
+| **Email** | The recipient email address (e.g. `yourname_123@kindle.com`). |
+| **Set as default** | Makes this address the default recipient when sending books. |
+
+### Setting a default address
+
+The default address is used automatically when you send a book without explicitly choosing a recipient. Mark any address as the default from the address list, or check **Set as default** when creating a new one.
+
+Only one address can be the default at a time. Setting a new default automatically clears the previous one.
+
+### Editing and deleting addresses
+
+- Click the edit icon next to an address to update its label, email, or default status.
+- Click the delete icon to remove an address. If you delete the default address, the oldest remaining address becomes the new default automatically.
+
+---
+
+## Sending a book
+
+<Steps>
+  <Step title="Open the book">
+    Click on a book in your library to open its detail view.
+  </Step>
+  <Step title="Click Send">
+    Click the **Send to eReader** button.
+  </Step>
+  <Step title="Choose a recipient">
+    Select a saved address from the list, or type an address directly. If you have a default address configured, it is pre-selected.
+  </Step>
+  <Step title="Confirm">
+    Click **Send**. Bookie attaches the book file and sends it via your configured SMTP server. A confirmation message appears when delivery succeeds.
+  </Step>
+</Steps>
+
+### Recipient resolution order
+
+When sending, Bookie resolves the recipient in this order:
+
+1. An address explicitly chosen in the Send dialog.
+2. Your default address from the **eReader addresses** list.
+3. The legacy `kindle_email` setting (kept for backward compatibility with older configurations).
+
+If none of these is set, the send fails with a message asking you to add an address in Settings.
+
+<Warning>
+  SMTP must be fully configured (`smtp_host`, `smtp_user`, and `smtp_password`) before you can send books. Attempting to send without a complete SMTP configuration returns an error.
+</Warning>

@@ -1,0 +1,66 @@
+---
+title: 'Send book via email'
+description: 'Send a book file as an email attachment using the configured SMTP server.'
+---
+
+`POST /api/books/{book_id}/send`
+
+Sends the book file as an email attachment. If no recipient is provided in the request body, the endpoint falls back to the default address saved in the **Email Addresses** table, and then to the legacy `kindle_email` setting.
+
+<Info>
+  SMTP must be configured before using this endpoint. Set `smtp_host`, `smtp_user`, and `smtp_password` in settings. Returns 400 if any of these are missing.
+</Info>
+
+## Path parameters
+
+<ParamField path="book_id" type="integer" required>
+  The ID of the book to send.
+</ParamField>
+
+## Request body
+
+<ParamField body="recipient" type="string">
+  Email address to send the book to. If omitted, the default email address from the Email Addresses table is used. If no default address is saved, the legacy `kindle_email` setting is tried. Returns 400 if no recipient can be resolved.
+</ParamField>
+
+<RequestExample>
+
+```bash Send to explicit recipient
+curl --request POST \
+  --url http://localhost:5000/api/books/1/send \
+  --header 'Content-Type: application/json' \
+  --data '{"recipient": "user@kindle.com"}'
+```
+
+```bash Use default recipient
+curl --request POST \
+  --url http://localhost:5000/api/books/1/send
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"success": true, "message": "Successfully sent 'The Hobbit.epub' to user@kindle.com"}
+```
+
+```json 400
+{"error": "SMTP settings incomplete. Configure in Settings first."}
+```
+
+```json 500
+{"error": "SMTP authentication failed. Check username and password."}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the email was delivered successfully.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message including the filename and recipient address.
+</ResponseField>

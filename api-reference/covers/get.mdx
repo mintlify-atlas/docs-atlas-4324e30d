@@ -1,0 +1,53 @@
+---
+title: Get cover
+description: Retrieve the cover image for a book, optionally returning a smaller thumbnail.
+api: GET /api/books/{book_id}/cover
+---
+
+Returns the JPEG cover image stored for the book. Pass `thumb=true` to receive the smaller thumbnail version (300 × 450 px) instead of the full-size image (667 × 1000 px).
+
+## Path parameters
+
+<ParamField path="book_id" type="number" required>
+  ID of the book.
+</ParamField>
+
+## Query parameters
+
+<ParamField query="thumb" type="boolean" default="false">
+  When `true`, returns the thumbnail version of the cover.
+</ParamField>
+
+## Response
+
+Returns the image with `Content-Type: image/jpeg`. Returns `404` when no cover has been saved for the book.
+
+<RequestExample>
+
+```bash Full-size cover
+curl --request GET \
+  --url http://localhost:5000/api/books/42/cover \
+  --output cover.jpg
+```
+
+```bash Thumbnail
+curl --request GET \
+  --url 'http://localhost:5000/api/books/42/cover?thumb=true' \
+  --output cover_thumb.jpg
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```text 200
+<JPEG image binary>
+```
+
+```json 404
+{
+  "error": "404 Not Found"
+}
+```
+
+</ResponseExample>

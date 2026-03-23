@@ -1,0 +1,55 @@
+---
+title: 'Organize book into folder'
+description: 'Move a single book file into an Author/ or Author/Series/ subfolder based on the current folder organization setting.'
+---
+
+`POST /api/books/{book_id}/organize`
+
+Moves the book's file into a subfolder structure determined by the `folder_organization` setting. The database record is updated to reflect the new path.
+
+## Path parameters
+
+<ParamField path="book_id" type="integer" required>
+  The ID of the book to organize.
+</ParamField>
+
+## Folder modes
+
+The endpoint reads the `folder_organization` setting and behaves as follows:
+
+| Setting value | Behavior |
+|---|---|
+| `flat` | No change. File stays in the root books directory. |
+| `by_author` | File is moved to `Author/filename`. |
+| `by_author_series` | File is moved to `Author/Series/filename` when a series is set, otherwise `Author/filename`. |
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/books/1/organize
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"success": true, "filename": "Tolkien/The Hobbit.epub"}
+```
+
+```json 404
+{"error": "File not found on disk"}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the file was located and the operation completed.
+</ResponseField>
+
+<ResponseField name="filename" type="string">
+  The new path of the file relative to the books directory.
+</ResponseField>

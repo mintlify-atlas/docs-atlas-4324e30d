@@ -1,0 +1,161 @@
+---
+title: 'Test SMTP'
+description: 'Verify your SMTP configuration by testing the connection or sending a test email.'
+---
+
+Two endpoints are available for testing SMTP settings. Use the connection test to verify credentials without sending any mail, or send a test email to confirm end-to-end delivery.
+
+---
+
+## Test SMTP connection
+
+`POST /api/settings/test-smtp`
+
+Attempts to connect to the SMTP server and authenticate. No email is sent. Returns a success response if the login succeeds.
+
+<ParamField body="smtp_host" type="string">
+  SMTP server hostname (e.g., `smtp.gmail.com`). Falls back to the saved `smtp_host` setting if omitted.
+</ParamField>
+
+<ParamField body="smtp_port" type="number">
+  SMTP port number. Falls back to the saved `smtp_port` setting, defaulting to `587`.
+</ParamField>
+
+<ParamField body="smtp_user" type="string">
+  SMTP username. Falls back to the saved `smtp_user` setting if omitted.
+</ParamField>
+
+<ParamField body="smtp_password" type="string">
+  SMTP password. Falls back to the saved (encrypted) password if omitted or if the masked placeholder `••••••••` is sent.
+</ParamField>
+
+<ParamField body="use_tls" type="boolean">
+  Whether to use STARTTLS. Falls back to the saved `smtp_tls` setting, defaulting to `true`.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/settings/test-smtp \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_user": "you@gmail.com",
+    "smtp_password": "app-password",
+    "use_tls": true
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{"success": true, "message": "Connection successful"}
+```
+
+```json 200 Failure
+{"success": false, "error": "SMTP authentication failed. Check username and password."}
+```
+
+```json 400
+{"error": "Incomplete SMTP settings"}
+```
+
+</ResponseExample>
+
+<ResponseField name="success" type="boolean">
+  `true` if the SMTP login succeeded.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Present when `success` is `true`. Confirmation text.
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Present when `success` is `false`. Description of what failed.
+</ResponseField>
+
+---
+
+## Send test email
+
+`POST /api/settings/test-smtp-send`
+
+Connects to the SMTP server and sends a test message to the specified recipient. Use this to confirm that mail is actually delivered end-to-end.
+
+<ParamField body="smtp_host" type="string">
+  SMTP server hostname. Falls back to the saved `smtp_host` setting if omitted.
+</ParamField>
+
+<ParamField body="smtp_port" type="number">
+  SMTP port number. Falls back to the saved `smtp_port` setting, defaulting to `587`.
+</ParamField>
+
+<ParamField body="smtp_user" type="string">
+  SMTP username. Falls back to the saved `smtp_user` setting if omitted.
+</ParamField>
+
+<ParamField body="smtp_password" type="string">
+  SMTP password. Falls back to the saved (encrypted) password if omitted or if the masked placeholder is sent.
+</ParamField>
+
+<ParamField body="use_tls" type="boolean">
+  Whether to use STARTTLS. Falls back to the saved `smtp_tls` setting, defaulting to `true`.
+</ParamField>
+
+<ParamField body="recipient" type="string" required>
+  Email address to send the test message to.
+</ParamField>
+
+<ParamField body="sender_email" type="string">
+  From address for the test email. Defaults to `smtp_sender` setting, then falls back to `smtp_user`.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/settings/test-smtp-send \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_user": "you@gmail.com",
+    "smtp_password": "app-password",
+    "use_tls": true,
+    "recipient": "test@example.com"
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{"success": true, "message": "Test email sent successfully to test@example.com"}
+```
+
+```json 200 Failure
+{"success": false, "error": "Could not connect to SMTP server smtp.gmail.com:587"}
+```
+
+```json 400
+{"error": "Recipient email is required"}
+```
+
+</ResponseExample>
+
+<ResponseField name="success" type="boolean">
+  `true` if the test email was delivered.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Present when `success` is `true`. Includes the recipient address.
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Present when `success` is `false`. Description of what failed.
+</ResponseField>

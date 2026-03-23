@@ -1,0 +1,78 @@
+---
+title: Fetch metadata for a book
+description: Search metadata sources using a book's existing identifiers or a custom query, optionally applying the top result.
+api: POST /api/books/{book_id}/fetch-metadata
+---
+
+Searches all configured metadata sources for a given book. The query defaults to the book's ISBN, ISBN-13, or title, in that order. Pass `apply: true` to automatically apply the first result to the book record.
+
+## Path parameters
+
+<ParamField path="book_id" type="number" required>
+  ID of the book.
+</ParamField>
+
+## Body
+
+<ParamField body="source" type="string" default="open_library">
+  Accepted for API compatibility but not used for routing. All enabled sources are always searched.
+</ParamField>
+
+<ParamField body="query" type="string">
+  Override the search query. When omitted, the query is built from the book's `isbn`, `isbn13`, or `title`, in that order.
+</ParamField>
+
+<ParamField body="apply" type="boolean" default="false">
+  When `true`, applies the first result to the book record immediately.
+</ParamField>
+
+## Response
+
+Returns an array of metadata result objects in source priority order. The shape is identical to [Search metadata](/api-reference/metadata/search).
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/books/42/fetch-metadata \
+  --header 'Content-Type: application/json' \
+  --data '{}'
+```
+
+```bash cURL with query and apply
+curl --request POST \
+  --url http://localhost:5000/api/books/42/fetch-metadata \
+  --header 'Content-Type: application/json' \
+  --data '{"query": "Dune Frank Herbert", "apply": true}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+[
+  {
+    "source": "open_library",
+    "title": "Dune",
+    "author": "Frank Herbert",
+    "publisher": "Chilton Books",
+    "published_date": "1965",
+    "page_count": 412,
+    "categories": "Science fiction, Ecology, Desert",
+    "language": "eng",
+    "isbn": "0441013597",
+    "isbn13": "9780441013593",
+    "rating": 4.2,
+    "cover_url": "https://covers.openlibrary.org/b/id/8231992-L.jpg"
+  }
+]
+```
+
+```json 404
+{
+  "error": "404 Not Found"
+}
+```
+
+</ResponseExample>

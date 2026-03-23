@@ -1,0 +1,101 @@
+---
+title: "Tags and series"
+description: "Organize your library with tags and track multi-book series with fractional ordering."
+---
+
+## Tags
+
+Tags are free-form labels you can apply to any book. Use them to group books by mood, reading status, topic, or any other category that makes sense for your library.
+
+### Creating tags
+
+You can create a tag in two ways:
+
+- **From the book detail view** — type a new tag name in the tag field and save. The tag is created automatically if it does not already exist.
+- **From the Tags page** — go to **Tags** in the navigation and click **New tag**.
+
+### Listing tags
+
+The **Tags** page shows all tags along with the number of books assigned to each one. Tags are listed in alphabetical order.
+
+### Deleting tags
+
+Deleting a tag removes it from all books it was applied to. To delete a tag, open the **Tags** page and click the delete button next to the tag.
+
+<Warning>
+  Deleting a tag is permanent. All associations between that tag and your books are removed immediately.
+</Warning>
+
+### Adding and removing tags on a book
+
+Open any book's detail view to see its current tags. You can:
+
+- **Add a tag** by typing in the tag field. Existing tags are suggested as you type; you can also type a new name to create it on the spot.
+- **Remove a tag** by clicking the × next to it.
+
+### Bulk tagging
+
+To apply a tag to multiple books at once:
+
+<Steps>
+  <Step title="Select books">
+    In the library view, check the boxes next to the books you want to tag.
+  </Step>
+  <Step title="Open bulk actions">
+    Click the **Bulk actions** button that appears when books are selected.
+  </Step>
+  <Step title="Choose Bulk tag">
+    Select **Bulk tag**, enter a tag name, and confirm. The tag is applied to all selected books. If the tag does not exist yet, it is created automatically.
+  </Step>
+</Steps>
+
+### Filtering by tag
+
+Use the **Tag** filter in the library view to show only books with a specific tag applied.
+
+---
+
+## Series
+
+Series tracking lets you group multi-book series and keep them in reading order.
+
+### Series fields
+
+Each book has two series fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `series` | text | The series name (e.g. `The Expanse`) |
+| `series_order` | float | The book's position in the series |
+
+Using a float for `series_order` allows fractional positions such as `0.5` or `1.5` for novellas and short stories that fall between numbered entries.
+
+### Setting series information
+
+Edit the **Series** and **Series order** fields on any book's detail view and save. Metadata fetched from online sources may also populate these fields if the source includes series data.
+
+### Filtering by series
+
+Use the **Series** filter in the library view to show all books in a specific series. You can also click a series name anywhere it appears in the UI to filter by it.
+
+### Listing all series
+
+The series list endpoint returns all distinct series names in your library, sorted alphabetically:
+
+```
+GET /api/series
+```
+
+```json
+["The Expanse", "Discworld", "Mistborn"]
+```
+
+### Sorting by series
+
+When you sort the library by **Series**, Bookie applies the following order:
+
+1. Books **with** a series name appear before books without one.
+2. Within the same series, books are ordered by `series_order` (ascending or descending).
+3. Books without a series appear last, regardless of sort direction.
+
+This keeps series together and in reading order when you browse by series.

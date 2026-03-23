@@ -1,0 +1,31 @@
+---
+title: 'Logout'
+description: 'Clear the current session.'
+---
+
+`POST /api/auth/logout`
+
+Clears the current session. No request body is required. The endpoint always returns `200` regardless of whether a session was active.
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/auth/logout
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"success": true}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="success" type="boolean">
+  Always `true`.
+</ResponseField>

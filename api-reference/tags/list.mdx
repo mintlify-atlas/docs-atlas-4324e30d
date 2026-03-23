@@ -1,0 +1,44 @@
+---
+title: List tags
+description: Retrieve all tags with their book counts, ordered alphabetically by name.
+api: GET /api/tags
+---
+
+Returns every tag in the library, sorted alphabetically. Each tag includes the number of books currently associated with it.
+
+## Response
+
+Returns an array of tag objects.
+
+<ResponseField name="[].id" type="number" required>
+  Tag ID.
+</ResponseField>
+
+<ResponseField name="[].name" type="string" required>
+  Tag name.
+</ResponseField>
+
+<ResponseField name="[].book_count" type="number" required>
+  Number of books currently tagged with this tag.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/tags
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+[
+  {"id": 3, "name": "classic", "book_count": 5},
+  {"id": 1, "name": "fantasy", "book_count": 12},
+  {"id": 2, "name": "sci-fi", "book_count": 7}
+]
+```
+
+</ResponseExample>

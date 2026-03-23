@@ -1,0 +1,217 @@
+---
+title: 'Settings'
+description: 'Read and update application settings including SMTP, metadata, rename, and folder organization options.'
+---
+
+---
+
+## Get settings
+
+`GET /api/settings`
+
+Returns the current value of all settings keys. The `smtp_password` field is masked — if a password is saved, the response contains `••••••••`; otherwise it returns an empty string.
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/settings
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "smtp_host": "smtp.gmail.com",
+  "smtp_port": "587",
+  "smtp_user": "you@gmail.com",
+  "smtp_password": "••••••••",
+  "smtp_tls": "true",
+  "smtp_sender": "",
+  "auto_metadata": "false",
+  "meta_replace_missing": "false",
+  "apply_meta_cover": "false",
+  "source_priority": "",
+  "sources_disabled": "",
+  "folder_organization": "flat",
+  "rename_scheme": "original",
+  "rename_custom_template": "",
+  "display_name": "Bookie",
+  "log_level": "INFO"
+}
+```
+
+</ResponseExample>
+
+### Response fields
+
+<ResponseField name="smtp_host" type="string">
+  SMTP server hostname.
+</ResponseField>
+
+<ResponseField name="smtp_port" type="string">
+  SMTP port number as a string.
+</ResponseField>
+
+<ResponseField name="smtp_user" type="string">
+  SMTP login username.
+</ResponseField>
+
+<ResponseField name="smtp_password" type="string">
+  Returns `••••••••` if a password is saved, or an empty string if not set. The actual password is never returned.
+</ResponseField>
+
+<ResponseField name="smtp_tls" type="string">
+  `"true"` to use STARTTLS, `"false"` to use implicit TLS (SMTP_SSL).
+</ResponseField>
+
+<ResponseField name="smtp_sender" type="string">
+  From address used in outgoing emails. Falls back to `smtp_user` if empty.
+</ResponseField>
+
+<ResponseField name="auto_metadata" type="string">
+  `"true"` to automatically fetch metadata from online sources on upload and scan.
+</ResponseField>
+
+<ResponseField name="meta_replace_missing" type="string">
+  `"true"` to fill only empty metadata fields when applying fetched metadata.
+</ResponseField>
+
+<ResponseField name="apply_meta_cover" type="string">
+  `"true"` to apply a fetched cover image when auto-fetching metadata.
+</ResponseField>
+
+<ResponseField name="source_priority" type="string">
+  Comma-separated list of metadata source keys in priority order.
+</ResponseField>
+
+<ResponseField name="sources_disabled" type="string">
+  Comma-separated list of metadata source keys that are disabled.
+</ResponseField>
+
+<ResponseField name="folder_organization" type="string">
+  How books are organized into subdirectories: `flat`, `by_author`, or `by_author_series`.
+</ResponseField>
+
+<ResponseField name="rename_scheme" type="string">
+  Active file naming scheme key (e.g., `author_title`). See `GET /api/rename/schemes`.
+</ResponseField>
+
+<ResponseField name="rename_custom_template" type="string">
+  Custom template string used when `rename_scheme` is `custom`.
+</ResponseField>
+
+<ResponseField name="display_name" type="string">
+  Instance display name shown in the UI.
+</ResponseField>
+
+<ResponseField name="log_level" type="string">
+  Active log level: `DEBUG`, `INFO`, `WARNING`, or `ERROR`.
+</ResponseField>
+
+---
+
+## Update settings
+
+`PUT /api/settings`
+
+Updates one or more settings. Only keys present in the request body are changed; all other settings remain unchanged.
+
+<Info>
+  Sending `••••••••` as the value for `smtp_password` is treated as a no-op. This prevents the masked placeholder displayed by `GET /api/settings` from overwriting the saved password when you round-trip the settings object.
+
+  Passwords are encrypted at rest using the application's data key.
+</Info>
+
+<ParamField body="smtp_host" type="string">
+  SMTP server hostname.
+</ParamField>
+
+<ParamField body="smtp_port" type="string">
+  SMTP port number.
+</ParamField>
+
+<ParamField body="smtp_user" type="string">
+  SMTP login username.
+</ParamField>
+
+<ParamField body="smtp_password" type="string">
+  SMTP password. Encrypted before storage. Ignored if the value equals `••••••••`.
+</ParamField>
+
+<ParamField body="smtp_tls" type="string">
+  `"true"` to enable STARTTLS, `"false"` to use implicit TLS.
+</ParamField>
+
+<ParamField body="smtp_sender" type="string">
+  From address for outgoing emails.
+</ParamField>
+
+<ParamField body="auto_metadata" type="string">
+  `"true"` to enable automatic metadata fetching on upload and scan.
+</ParamField>
+
+<ParamField body="meta_replace_missing" type="string">
+  `"true"` to only fill empty fields when applying auto-fetched metadata.
+</ParamField>
+
+<ParamField body="apply_meta_cover" type="string">
+  `"true"` to save and apply a cover image found during metadata fetch.
+</ParamField>
+
+<ParamField body="source_priority" type="string">
+  Comma-separated metadata source keys in desired priority order.
+</ParamField>
+
+<ParamField body="sources_disabled" type="string">
+  Comma-separated metadata source keys to disable.
+</ParamField>
+
+<ParamField body="folder_organization" type="string">
+  Folder mode: `flat`, `by_author`, or `by_author_series`.
+</ParamField>
+
+<ParamField body="rename_scheme" type="string">
+  Naming scheme key. Must match a key from `GET /api/rename/schemes`.
+</ParamField>
+
+<ParamField body="rename_custom_template" type="string">
+  Template string for the `custom` rename scheme.
+</ParamField>
+
+<ParamField body="display_name" type="string">
+  Instance display name.
+</ParamField>
+
+<ParamField body="log_level" type="string">
+  Log verbosity: `DEBUG`, `INFO`, `WARNING`, or `ERROR`.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request PUT \
+  --url http://localhost:5000/api/settings \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": "587",
+    "smtp_user": "you@gmail.com",
+    "smtp_password": "app-password",
+    "smtp_tls": "true",
+    "rename_scheme": "author_title",
+    "folder_organization": "by_author"
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"success": true}
+```
+
+</ResponseExample>

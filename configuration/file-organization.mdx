@@ -1,0 +1,192 @@
+---
+title: "File organization"
+description: "Configure how Bookie names and organizes your eBook files on disk using rename schemes and folder modes."
+---
+
+Bookie can automatically rename and sort your eBook files when they are uploaded or scanned. You control two independent settings: the **rename scheme** (what the filename looks like) and the **folder organization mode** (whether files are grouped into subdirectories).
+
+Both settings are configured under **Settings → Library** in the web UI and apply to newly added books as well as bulk operations.
+
+## Rename schemes
+
+A rename scheme is a template that determines the filename Bookie writes to disk. Choose one of the built-in schemes or write a custom template using placeholders.
+
+<AccordionGroup>
+  <Accordion title="original — Keep original filename">
+    Template: `{original}`
+
+    The file keeps whatever name it had when it was uploaded or scanned. No renaming occurs.
+
+    ```
+    my-ebook-scan-final-v2.epub
+    ```
+  </Accordion>
+
+  <Accordion title="title — Title">
+    Template: `{title}`
+
+    The file is renamed to the book's title.
+
+    ```
+    The Fellowship of the Ring.epub
+    ```
+  </Accordion>
+
+  <Accordion title="author_title — Author - Title">
+    Template: `{author} - {title}`
+
+    The most common scheme. Author name followed by a dash and the title.
+
+    ```
+    J.R.R. Tolkien - The Fellowship of the Ring.epub
+    ```
+  </Accordion>
+
+  <Accordion title="title_author — Title - Author">
+    Template: `{title} - {author}`
+
+    Title-first variant, useful if you prefer sorting by title in a flat directory.
+
+    ```
+    The Fellowship of the Ring - J.R.R. Tolkien.epub
+    ```
+  </Accordion>
+
+  <Accordion title="author_title_year — Author - Title (Year)">
+    Template: `{author} - {title} ({year})`
+
+    Includes the four-digit publication year in parentheses.
+
+    ```
+    J.R.R. Tolkien - The Fellowship of the Ring (1954).epub
+    ```
+  </Accordion>
+
+  <Accordion title="title_year — Title (Year)">
+    Template: `{title} ({year})`
+
+    Title with publication year. Useful when author information is not available.
+
+    ```
+    The Fellowship of the Ring (1954).epub
+    ```
+  </Accordion>
+
+  <Accordion title="series_order — Series Index - Title">
+    Template: `{series} {series_index} - {title}`
+
+    Designed for series books. Prefixes the filename with the series name and the book's position in the series.
+
+    ```
+    The Lord of the Rings 1 - The Fellowship of the Ring.epub
+    ```
+
+    <Note>If a book has no series data, the `{series}` and `{series_index}` placeholders resolve to empty strings and the leading separator is stripped automatically.</Note>
+  </Accordion>
+
+  <Accordion title="custom — Custom template">
+    Write your own template using any combination of the placeholders listed below. If the `custom` scheme is selected but no template is saved, Bookie falls back to `{author} - {title}`.
+
+    Example:
+    ```
+    {author} - {series} {series_index} - {title} ({year})
+    ```
+
+    Result:
+    ```
+    J.R.R. Tolkien - The Lord of the Rings 1 - The Fellowship of the Ring (1954).epub
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Placeholders
+
+All placeholders are available in custom templates and are used internally by the built-in schemes.
+
+| Placeholder | Description |
+|---|---|
+| `{title}` | Book title |
+| `{author}` | Primary author |
+| `{year}` | Publication year (4 digits) |
+| `{publisher}` | Publisher name |
+| `{isbn}` | ISBN-10 |
+| `{isbn13}` | ISBN-13 |
+| `{language}` | Language code |
+| `{series}` | Series name |
+| `{series_index}` | Series index/number |
+| `{original}` | Original filename without extension |
+| `{ext}` | File extension |
+
+<Tip>If a field has no value, most placeholders resolve to an empty string. `{title}` falls back to the original filename stem, and `{author}` falls back to `Unknown Author`.</Tip>
+
+### Filename sanitization
+
+Before writing to disk, every placeholder value is passed through an internal `_safe()` function that:
+
+- Normalizes Unicode characters to their ASCII equivalents (for example, `é` → `e`)
+- Removes characters that are not safe in filenames: `\ / : * ? " < > |`
+- Collapses multiple whitespace characters into a single space
+- Truncates the result to 80 characters
+
+This ensures generated filenames are portable across operating systems. The original metadata in the database is not affected.
+
+## Folder organization modes
+
+Independently of renaming, Bookie can move files into subdirectories inside the books folder.
+
+| Mode | Directory structure | Description |
+|---|---|---|
+| `flat` | `books/filename.epub` | All files in one directory. This is the default. |
+| `by_author` | `books/Author Name/filename.epub` | One subdirectory per author. |
+| `by_author_series` | `books/Author Name/Series Name/filename.epub` | Author subdirectory with a nested series subdirectory. Falls back to `by_author` if the book has no series. |
+
+The directory names are also sanitized by `_safe()` using the same rules as filenames.
+
+## Bulk rename
+
+You can preview and apply rename and organization settings across your entire library at once.
+
+<Steps>
+  <Step title="Preview changes">
+    Send a request to `POST /api/rename/bulk` without `apply: true`. The response lists every book with its current filename and the filename it would receive.
+
+    ```json
+    {
+      "scheme": "author_title",
+      "apply": false
+    }
+    ```
+
+    Example response entry:
+
+    ```json
+    {
+      "id": 12,
+      "original": "my-ebook-scan-final-v2.epub",
+      "new": "J.R.R. Tolkien - The Fellowship of the Ring.epub",
+      "changed": true
+    }
+    ```
+  </Step>
+
+  <Step title="Apply changes">
+    Once you are satisfied with the preview, send the same request with `apply: true` to commit the renames to disk and update the database.
+
+    ```json
+    {
+      "scheme": "author_title",
+      "apply": true
+    }
+    ```
+
+    <Warning>Bulk rename moves files on disk. Ensure you have a backup before applying changes to a large library.</Warning>
+  </Step>
+</Steps>
+
+The bulk rename endpoint uses the `rename_scheme`, `rename_custom_template`, and `folder_organization` values saved in Settings. Books that already match the target filename are skipped.
+
+## How renaming interacts with uploads
+
+Bookie automatically applies the active rename scheme and folder organization mode when a file is uploaded or discovered during a library scan. You do not need to trigger renaming manually for new books.
+
+When you edit a book's metadata and save, Bookie re-applies the rename scheme immediately so the filename stays in sync.

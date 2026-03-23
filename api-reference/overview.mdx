@@ -1,0 +1,118 @@
+---
+title: API overview
+description: Base URL, authentication, content types, and the Book object schema for the Bookie API.
+---
+
+## Base URL
+
+All endpoints are served from the same host as the Bookie web UI.
+
+```
+http://localhost:5000
+```
+
+Replace `localhost:5000` with your deployment URL when running Bookie on a remote host.
+
+## Authentication
+
+Bookie uses session-based authentication. You must log in through the web UI (or the `POST /auth/login` endpoint) before calling any `/api/*` endpoint. The session is stored in a browser cookie that must be included with every request.
+
+All `/api/*` endpoints return the following response when the session is missing or expired:
+
+```json
+{"error": "Unauthorized"}
+```
+
+HTTP status code: `401`
+
+## Content types
+
+| Scenario | `Content-Type` |
+|---|---|
+| JSON request bodies | `application/json` |
+| File uploads | `multipart/form-data` |
+| All responses | `application/json` |
+
+## The Book object
+
+Most endpoints return one or more Book objects. The schema mirrors the `to_dict()` output from the `Book` model.
+
+<ResponseField name="id" type="integer" required>
+  Unique identifier for the book.
+</ResponseField>
+
+<ResponseField name="filename" type="string" required>
+  Relative path to the book file within the books directory (e.g., `Author Name/My Book.epub`).
+</ResponseField>
+
+<ResponseField name="file_format" type="string" required>
+  File extension in lowercase, such as `epub`, `pdf`, `mobi`, `azw`, `azw3`, `fb2`, `djvu`, `cbz`, `cbr`, or `txt`.
+</ResponseField>
+
+<ResponseField name="file_size" type="integer" required>
+  File size in bytes.
+</ResponseField>
+
+<ResponseField name="title" type="string">
+  Book title. Defaults to the filename stem when not populated from metadata.
+</ResponseField>
+
+<ResponseField name="author" type="string">
+  Primary author name.
+</ResponseField>
+
+<ResponseField name="isbn" type="string">
+  10-digit ISBN, without hyphens.
+</ResponseField>
+
+<ResponseField name="isbn13" type="string">
+  13-digit ISBN-13, without hyphens.
+</ResponseField>
+
+<ResponseField name="publisher" type="string">
+  Publisher name.
+</ResponseField>
+
+<ResponseField name="published_date" type="string">
+  Publication year as a 4-character string, e.g. `"2023"`.
+</ResponseField>
+
+<ResponseField name="language" type="string">
+  IETF language code, e.g. `"en"` or `"fr"`.
+</ResponseField>
+
+<ResponseField name="page_count" type="integer">
+  Number of pages.
+</ResponseField>
+
+<ResponseField name="rating" type="number">
+  User rating. Any finite float value.
+</ResponseField>
+
+<ResponseField name="goodreads_id" type="string">
+  Goodreads book ID, populated when metadata is fetched from Goodreads.
+</ResponseField>
+
+<ResponseField name="cover_filename" type="string">
+  Filename of the stored cover image, or `null` if no cover is available.
+</ResponseField>
+
+<ResponseField name="series" type="string">
+  Series name, or `null` if the book does not belong to a series.
+</ResponseField>
+
+<ResponseField name="series_order" type="number">
+  Position of this book within its series. Any finite float value.
+</ResponseField>
+
+<ResponseField name="date_added" type="string">
+  ISO 8601 timestamp of when the book was added to the library, e.g. `"2024-03-15T10:30:00+00:00"`.
+</ResponseField>
+
+<ResponseField name="date_modified" type="string">
+  ISO 8601 timestamp of the last metadata update.
+</ResponseField>
+
+<ResponseField name="tags" type="string[]">
+  Array of tag name strings applied to this book.
+</ResponseField>

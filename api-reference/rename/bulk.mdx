@@ -1,0 +1,80 @@
+---
+title: 'Bulk rename'
+description: 'Rename all books using the currently configured naming scheme and folder organization settings.'
+---
+
+`POST /api/rename/bulk`
+
+Renames every book in the library using the `rename_scheme` and `rename_custom_template` values from settings, and organizes files into folders according to the `folder_organization` setting. Pass `apply: true` to commit changes to disk; omit it or pass `false` to receive a dry-run preview.
+
+<Warning>
+  When `apply` is `true`, files are moved on disk and database records are updated immediately. This operation cannot be undone from the API.
+</Warning>
+
+## Request body
+
+<ParamField body="apply" type="boolean" default="false">
+  Set to `true` to execute the renames. When `false` (the default), the response shows what would change without modifying any files.
+</ParamField>
+
+<RequestExample>
+
+```bash Dry run
+curl --request POST \
+  --url http://localhost:5000/api/rename/bulk \
+  --header 'Content-Type: application/json' \
+  --data '{"apply": false}'
+```
+
+```bash Apply renames
+curl --request POST \
+  --url http://localhost:5000/api/rename/bulk \
+  --header 'Content-Type: application/json' \
+  --data '{"apply": true}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "results": [
+    {"id": 1, "original": "old.epub", "new": "Tolkien/The Hobbit.epub", "changed": true},
+    {"id": 2, "original": "Rowling - Harry Potter.pdf", "new": "Rowling - Harry Potter.pdf", "changed": false}
+  ],
+  "errors": [],
+  "applied": false
+}
+```
+
+</ResponseExample>
+
+## Response fields
+
+<ResponseField name="results" type="array">
+  One entry per book processed.
+
+  <Expandable title="result object">
+    <ResponseField name="id" type="integer">
+      Book ID.
+    </ResponseField>
+    <ResponseField name="original" type="string">
+      Filename before the operation (relative to the books directory).
+    </ResponseField>
+    <ResponseField name="new" type="string">
+      Filename after the operation. Identical to `original` when `changed` is `false`.
+    </ResponseField>
+    <ResponseField name="changed" type="boolean">
+      `true` if the filename would change (or did change when `applied` is `true`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="errors" type="array">
+  Books that could not be renamed. Each entry includes `id`, `original`, and an `error` message string.
+</ResponseField>
+
+<ResponseField name="applied" type="boolean">
+  Reflects the `apply` value from the request. `true` means changes were written to disk.
+</ResponseField>

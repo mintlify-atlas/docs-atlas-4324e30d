@@ -1,0 +1,36 @@
+---
+title: List series
+description: Retrieve all distinct series names present in the library, ordered alphabetically.
+api: GET /api/series
+---
+
+Returns a sorted array of every distinct, non-empty series name found across all books. Books with no series set are excluded.
+
+## Response
+
+Returns an array of strings.
+
+<ResponseField name="[]" type="string[]" required>
+  Alphabetically ordered array of distinct series names.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/series
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+[
+  "Dune Chronicles",
+  "The Lord of the Rings",
+  "Wheel of Time"
+]
+```
+
+</ResponseExample>

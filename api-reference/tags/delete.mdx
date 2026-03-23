@@ -1,0 +1,44 @@
+---
+title: Delete tag
+description: Permanently delete a tag and remove it from all books.
+api: DELETE /api/tags/{tag_id}
+---
+
+Deletes the tag and cascades the deletion to all book-tag associations. Books themselves are not affected.
+
+## Path parameters
+
+<ParamField path="tag_id" type="number" required>
+  ID of the tag to delete.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean" required>
+  Always `true` on success.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request DELETE \
+  --url http://localhost:5000/api/tags/8
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "success": true
+}
+```
+
+```json 404
+{
+  "error": "404 Not Found"
+}
+```
+
+</ResponseExample>

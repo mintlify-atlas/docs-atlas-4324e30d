@@ -1,0 +1,88 @@
+---
+title: 'Logs'
+description: 'Retrieve recent application log lines and set the active log level.'
+---
+
+---
+
+## Get logs
+
+`GET /api/logs`
+
+Returns up to the last 500 log lines captured by the in-memory log buffer. You can filter by minimum severity level using the `level` query parameter.
+
+### Query parameters
+
+<ParamField query="level" type="string">
+  Minimum log level to include. When set, only lines at or above the specified level are returned. Valid values: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
+</ParamField>
+
+<RequestExample>
+
+```bash All logs
+curl --request GET \
+  --url http://localhost:5000/api/logs
+```
+
+```bash Errors and critical only
+curl --request GET \
+  --url 'http://localhost:5000/api/logs?level=ERROR'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "logs": [
+    "2024-01-15 10:30:00 INFO     app: Book scanned: The Hobbit.epub",
+    "2024-01-15 10:30:01 WARNING  app: Auto-fetch failed for scanned book wizard.pdf: timeout"
+  ]
+}
+```
+
+</ResponseExample>
+
+<ResponseField name="logs" type="string[]">
+  Array of formatted log lines. Each line has the format `YYYY-MM-DD HH:MM:SS LEVEL name: message`.
+</ResponseField>
+
+---
+
+## Set log level
+
+`PUT /api/logs/level`
+
+Changes the active log level for the application. The new level is persisted to settings and restored on next startup.
+
+<ParamField body="level" type="string" required>
+  The log level to set. Must be one of `DEBUG`, `INFO`, `WARNING`, or `ERROR`.
+</ParamField>
+
+<RequestExample>
+
+```bash cURL
+curl --request PUT \
+  --url http://localhost:5000/api/logs/level \
+  --header 'Content-Type: application/json' \
+  --data '{"level": "DEBUG"}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{"level": "DEBUG"}
+```
+
+```json 400
+{"error": "Invalid level; must be one of ['DEBUG', 'ERROR', 'INFO', 'WARNING']"}
+```
+
+</ResponseExample>
+
+<ResponseField name="level" type="string">
+  The new active log level.
+</ResponseField>

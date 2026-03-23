@@ -1,0 +1,115 @@
+---
+title: Metadata sources
+description: Retrieve or update the priority order and disabled state of metadata sources.
+---
+
+Two endpoints manage which metadata sources are searched and in what order: a read endpoint and a write endpoint.
+
+---
+
+## Get sources
+
+`GET /api/metadata/sources`
+
+Returns all available sources along with the current priority order and any disabled sources.
+
+### Response
+
+<ResponseField name="all" type="string[]" required>
+  Complete list of available source keys.
+</ResponseField>
+
+<ResponseField name="labels" type="object" required>
+  Human-readable display name for each source key.
+
+  <Expandable title="properties">
+    <ResponseField name="open_library" type="string">
+      Always `"Open Library"`.
+    </ResponseField>
+    <ResponseField name="itunes" type="string">
+      Always `"Apple Books"`.
+    </ResponseField>
+    <ResponseField name="goodreads" type="string">
+      Always `"GoodReads"`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="priority" type="string[]" required>
+  Source keys in the configured search order.
+</ResponseField>
+
+<ResponseField name="disabled" type="string[]" required>
+  Source keys that are currently disabled and will not be searched.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/metadata/sources
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "all": ["open_library", "itunes", "goodreads"],
+  "labels": {
+    "open_library": "Open Library",
+    "itunes": "Apple Books",
+    "goodreads": "GoodReads"
+  },
+  "priority": ["open_library", "itunes", "goodreads"],
+  "disabled": []
+}
+```
+
+</ResponseExample>
+
+---
+
+## Update sources
+
+`PUT /api/metadata/sources`
+
+Updates the priority order and/or disabled list. Both fields are optional; omit a field to leave it unchanged.
+
+### Body
+
+<ParamField body="priority" type="string[]">
+  Ordered array of source keys defining the search priority.
+</ParamField>
+
+<ParamField body="disabled" type="string[]">
+  Array of source keys to disable. Disabled sources are excluded from all searches even when explicitly listed in a `sources` query parameter.
+</ParamField>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Always `true` on success.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request PUT \
+  --url http://localhost:5000/api/metadata/sources \
+  --header 'Content-Type: application/json' \
+  --data '{"priority": ["itunes", "open_library", "goodreads"], "disabled": ["goodreads"]}'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "ok": true
+}
+```
+
+</ResponseExample>
