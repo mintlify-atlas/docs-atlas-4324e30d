@@ -1,174 +1,97 @@
 ---
 title: Apply metadata to a book
 description: Write metadata fields directly onto a book record, replacing all provided fields unconditionally.
-api: POST /api/books/{book_id}/apply-metadata
 ---
 
-Applies the supplied metadata fields to the book, replacing every provided field regardless of whether the book already has a value. After updating the record, any configured rename and folder-organization rules are re-applied to the book file.
+`POST /api/books/{book_id}/apply-metadata`
+
+Applies the supplied metadata to a book. Only `title`, `author`, `published_date`, `page_count`, and `cover_url` are written to the book record. If `cover_url` is provided, Bookie downloads and saves the image as the book's cover. After updating, any configured rename and folder-organization rules are re-applied to the book file.
+
+<Note>
+  This endpoint passes `replace_missing_only=False`, so the four text fields (`title`, `author`, `published_date`, `page_count`) are always overwritten with whatever value is in the request body, regardless of whether the book already has a value.
+</Note>
 
 ## Path parameters
 
-<ParamField path="book_id" type="number" required>
+<ParamField path="book_id" type="integer" required>
   ID of the book.
 </ParamField>
 
-## Body
+## Request body
 
-All body fields are optional. Only fields present in the request body are written; omitted fields are left unchanged.
+All body fields are optional. Only fields present in the request body are processed; unrecognized fields are ignored.
 
 <ParamField body="title" type="string">
-  Book title.
+  Book title. Replaces the current value unconditionally.
 </ParamField>
 
 <ParamField body="author" type="string">
-  Author name.
-</ParamField>
-
-<ParamField body="publisher" type="string">
-  Publisher name.
+  Author name. Replaces the current value unconditionally.
 </ParamField>
 
 <ParamField body="published_date" type="string">
-  Four-digit publication year (e.g. `"1965"`).
+  Publication year. Only the first 4 characters are stored (e.g. `"1965"`).
 </ParamField>
 
 <ParamField body="page_count" type="number">
   Total page count.
 </ParamField>
 
-<ParamField body="categories" type="string">
-  Comma-separated subject categories.
-</ParamField>
-
-<ParamField body="language" type="string">
-  Language code or name.
-</ParamField>
-
-<ParamField body="isbn" type="string">
-  ISBN-10.
-</ParamField>
-
-<ParamField body="isbn13" type="string">
-  ISBN-13.
-</ParamField>
-
-<ParamField body="rating" type="number">
-  Numeric rating.
-</ParamField>
-
 <ParamField body="cover_url" type="string">
-  URL of a cover image to download and save.
+  HTTPS URL of a cover image to download and save. The image is downloaded via the scraper (HTTPS only, 10 MB limit) and saved as the book's cover JPEG.
 </ParamField>
 
-<ParamField body="goodreads_id" type="string">
-  GoodReads book ID.
-</ParamField>
-
-<ParamField body="series" type="string">
-  Series name.
-</ParamField>
-
-<ParamField body="series_order" type="number">
-  Position within the series.
-</ParamField>
+<Info>
+  Other metadata fields such as `publisher`, `isbn`, `isbn13`, `language`, `description`, `rating`, `goodreads_id`, `series`, `series_order`, and `categories` are **not** updated by this endpoint. To update those fields, use `PUT /api/books/{book_id}` for the fields it supports (`title`, `author`, `published_date`, `page_count`, `series`, `series_order`, `rating`).
+</Info>
 
 ## Response
 
-Returns the updated book object.
+Returns the updated Book object.
 
-<ResponseField name="id" type="number" required>
+<ResponseField name="id" type="integer" required>
   Book ID.
 </ResponseField>
 
 <ResponseField name="filename" type="string" required>
-  Current filename (may change if rename rules are configured).
-</ResponseField>
-
-<ResponseField name="file_format" type="string">
-  File extension, e.g. `epub`, `pdf`.
-</ResponseField>
-
-<ResponseField name="file_size" type="number">
-  File size in bytes.
+  Current filename relative to the books directory (may change if rename rules are configured).
 </ResponseField>
 
 <ResponseField name="title" type="string">
-  Book title.
+  Updated book title.
 </ResponseField>
 
 <ResponseField name="author" type="string">
-  Author name.
-</ResponseField>
-
-<ResponseField name="publisher" type="string">
-  Publisher name.
+  Updated author name.
 </ResponseField>
 
 <ResponseField name="published_date" type="string">
   Four-digit publication year.
 </ResponseField>
 
-<ResponseField name="page_count" type="number">
+<ResponseField name="page_count" type="integer">
   Total page count.
 </ResponseField>
 
-<ResponseField name="language" type="string">
-  Language code or name.
-</ResponseField>
-
-<ResponseField name="isbn" type="string">
-  ISBN-10.
-</ResponseField>
-
-<ResponseField name="isbn13" type="string">
-  ISBN-13.
-</ResponseField>
-
-<ResponseField name="rating" type="number">
-  Numeric rating.
-</ResponseField>
-
-<ResponseField name="goodreads_id" type="string">
-  GoodReads book ID.
-</ResponseField>
-
 <ResponseField name="cover_filename" type="string">
-  Filename of the saved cover image, e.g. `42.jpg`. `null` if no cover.
+  Filename of the saved cover image (e.g. `42.jpg`), or `null` if no cover is set.
 </ResponseField>
 
-<ResponseField name="series" type="string">
-  Series name. `null` if not set.
-</ResponseField>
-
-<ResponseField name="series_order" type="number">
-  Position within the series. `null` if not set.
-</ResponseField>
-
-<ResponseField name="date_added" type="string">
-  ISO 8601 timestamp when the book was added.
-</ResponseField>
-
-<ResponseField name="date_modified" type="string">
-  ISO 8601 timestamp of the last modification.
-</ResponseField>
-
-<ResponseField name="tags" type="string[]">
-  Array of tag names currently applied to the book.
-</ResponseField>
+See [The Book object](/api-reference/overview#the-book-object) for the full response schema.
 
 <RequestExample>
 
 ```bash cURL
 curl --request POST \
   --url http://localhost:5000/api/books/42/apply-metadata \
+  --cookie "session=<your-session-cookie>" \
   --header 'Content-Type: application/json' \
   --data '{
   "title": "Dune",
   "author": "Frank Herbert",
-  "isbn13": "9780441013593",
   "published_date": "1965",
-  "series": "Dune Chronicles",
-  "series_order": 1
+  "page_count": 412,
+  "cover_url": "https://covers.openlibrary.org/b/id/12345-L.jpg"
 }'
 ```
 
@@ -179,25 +102,25 @@ curl --request POST \
 ```json 200
 {
   "id": 42,
-  "filename": "Frank Herbert/Dune Chronicles/Dune.epub",
+  "filename": "Frank Herbert - Dune.epub",
   "file_format": "epub",
   "file_size": 1048576,
   "title": "Dune",
   "author": "Frank Herbert",
+  "isbn": null,
+  "isbn13": null,
   "publisher": null,
   "published_date": "1965",
-  "page_count": null,
   "language": null,
-  "isbn": null,
-  "isbn13": "9780441013593",
+  "page_count": 412,
   "rating": null,
   "goodreads_id": null,
   "cover_filename": "42.jpg",
-  "series": "Dune Chronicles",
-  "series_order": 1.0,
+  "series": null,
+  "series_order": null,
   "date_added": "2025-01-15T10:30:00+00:00",
   "date_modified": "2026-03-23T08:00:00+00:00",
-  "tags": ["sci-fi"]
+  "tags": []
 }
 ```
 
