@@ -1,0 +1,190 @@
+{
+  "projectType": "saas",
+  "projectName": "Bookie",
+  "projectDescription": "A self-hosted eBook management platform with a web UI for organizing libraries, fetching metadata, and sending books to eReaders.",
+  "theme": "almond",
+  "primaryColor": "#8B5E3C",
+  "lightColor": "#F5EDE4",
+  "darkColor": "#3B1F0E",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/library-management",
+              "features/metadata",
+              "features/covers",
+              "features/tags-and-series",
+              "features/send-to-ereader"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/file-organization",
+              "configuration/smtp-setup",
+              "configuration/authentication"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Books",
+            "pages": [
+              "api-reference/books/list",
+              "api-reference/books/upload",
+              "api-reference/books/get",
+              "api-reference/books/update",
+              "api-reference/books/delete",
+              "api-reference/books/download",
+              "api-reference/books/scan",
+              "api-reference/books/bulk-delete"
+            ]
+          },
+          {
+            "group": "Metadata",
+            "pages": [
+              "api-reference/metadata/search",
+              "api-reference/metadata/fetch",
+              "api-reference/metadata/apply",
+              "api-reference/metadata/sources"
+            ]
+          },
+          {
+            "group": "Covers",
+            "pages": [
+              "api-reference/covers/get",
+              "api-reference/covers/upload",
+              "api-reference/covers/embed",
+              "api-reference/covers/delete"
+            ]
+          },
+          {
+            "group": "Tags & Series",
+            "pages": [
+              "api-reference/tags/list",
+              "api-reference/tags/create",
+              "api-reference/tags/delete",
+              "api-reference/tags/book-tags",
+              "api-reference/series/list"
+            ]
+          },
+          {
+            "group": "File Renaming",
+            "pages": [
+              "api-reference/rename/schemes",
+              "api-reference/rename/preview",
+              "api-reference/rename/bulk",
+              "api-reference/rename/organize"
+            ]
+          },
+          {
+            "group": "Email & Delivery",
+            "pages": [
+              "api-reference/email/send-book",
+              "api-reference/email/addresses",
+              "api-reference/email/smtp-test"
+            ]
+          },
+          {
+            "group": "Settings & Auth",
+            "pages": [
+              "api-reference/settings/get-update",
+              "api-reference/auth/setup",
+              "api-reference/auth/login",
+              "api-reference/auth/logout",
+              "api-reference/auth/status",
+              "api-reference/auth/change-password"
+            ]
+          },
+          {
+            "group": "Stats & Logs",
+            "pages": [
+              "api-reference/stats",
+              "api-reference/logs"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multi-format eBook support (EPUB, PDF, MOBI, AZW3, CBZ, and more)",
+    "Automatic metadata fetching from Open Library, Apple Books, and Goodreads",
+    "Cover image extraction, search, and direct embedding into EPUB files",
+    "Series tracking, tagging, and bulk operations",
+    "Configurable file rename schemes and folder organization",
+    "Send books to Kindle or any eReader via SMTP/email",
+    "Self-hosted with Docker, persistent library stored in a volume",
+    "Session-based authentication with secure password hashing"
+  ],
+  "publicApiSurface": [
+    "GET /api/books",
+    "POST /api/books/upload",
+    "GET /api/books/<id>",
+    "PUT /api/books/<id>",
+    "DELETE /api/books/<id>",
+    "GET /api/books/<id>/download",
+    "POST /api/books/scan",
+    "POST /api/books/bulk-delete",
+    "POST /api/books/<id>/fetch-metadata",
+    "POST /api/books/<id>/apply-metadata",
+    "GET /api/metadata/search",
+    "GET /api/metadata/sources",
+    "PUT /api/metadata/sources",
+    "GET /api/books/<id>/cover",
+    "POST /api/books/<id>/cover",
+    "POST /api/books/<id>/cover/embed",
+    "DELETE /api/books/<id>/cover",
+    "GET /api/tags",
+    "POST /api/tags",
+    "DELETE /api/tags/<id>",
+    "GET /api/books/<id>/tags",
+    "POST /api/books/<id>/tags",
+    "DELETE /api/books/<id>/tags/<tag_id>",
+    "GET /api/series",
+    "GET /api/rename/schemes",
+    "POST /api/rename/preview",
+    "POST /api/rename/bulk",
+    "POST /api/books/<id>/rename",
+    "POST /api/books/<id>/organize",
+    "POST /api/books/<id>/send",
+    "GET /api/email-addresses",
+    "POST /api/email-addresses",
+    "PUT /api/email-addresses/<id>",
+    "DELETE /api/email-addresses/<id>",
+    "POST /api/email-addresses/<id>/set-default",
+    "GET /api/settings",
+    "PUT /api/settings",
+    "POST /api/settings/test-smtp",
+    "POST /api/settings/test-smtp-send",
+    "POST /api/auth/setup",
+    "POST /api/auth/login",
+    "POST /api/auth/logout",
+    "GET /api/auth/status",
+    "POST /api/auth/change-password",
+    "GET /api/stats",
+    "GET /api/logs",
+    "PUT /api/logs/level"
+  ]
+}
